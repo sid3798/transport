@@ -1,0 +1,9 @@
+{
+  "projects": {
+    "default": "comexamplehpdemo",
+    "transport": "compquizandroid-master-d6378",
+    "prod": "transport-assistant-prod"
+  },
+  "targets": {},
+  "etags": {}
+}
