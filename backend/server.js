@@ -1,5 +1,5 @@
 const express = require("express");
-const puppeteer = require("puppeteer");
+const puppeteer = require("puppeteer-core");
 const cors = require("cors");
 
 const app = express();
@@ -10,6 +10,7 @@ app.post("/generate-pdf", async (req, res) => {
   const invoiceData = req.body;
 
   const browser = await puppeteer.launch({
+    executablePath: "/usr/bin/chromium-browser",
     args:["--no-sandbox","--disable-setuid-sandbox"],
     headless:"new"
   });
