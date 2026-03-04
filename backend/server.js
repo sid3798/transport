@@ -1,12 +1,11 @@
 const express = require("express");
 const cors = require("cors");
-const PDFDocument = require("pdfkit")
+const PDFDocument = require("pdfkit");
+//const { width } = require("pdfkit/js/page");
 
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
-
-
 
 const companyDetails = {
   SG: {
@@ -19,7 +18,6 @@ const companyDetails = {
     accountNo: "610000000012951",
     ifsc: "SRCB00000446",
     pan: "DDAPG6320P",
-    
   },
   SW: {
     name: "SIDDHESHWAR TRANSPORT",
@@ -31,11 +29,13 @@ const companyDetails = {
     accountNo: "030665380000064",
     ifsc: "IBKL0000306",
     pan: "AIPG3412N",
-    
-  }
+  },
 };
 
 function convertNumberToWords(num) {
+
+  num = Number(String(num).replace(/,/g, "")) || 0;
+
   if (num === 0) return "Zero";
 
   const a = [
@@ -62,12 +62,140 @@ function convertNumberToWords(num) {
     return inWords(Math.floor(n / 10000000)) + " Crore " + inWords(n % 10000000);
   }
 
-  return inWords(num).trim();
+  return (inWords(num) || "").trim();
 }
+
+
+/* ------------------------
+   FOOTER FUNCTION
+-------------------------*/
+
+function drawFooter(doc, data, company) {
+
+  const startX = 20;
+  const startY = doc.page.height - 160;
+
+const totalPageWidth = doc.page.width - 40;
+
+const bankWidth = totalPageWidth * 0.30;
+const gstWidth = totalPageWidth * 0.40;
+const totalWidth = totalPageWidth - bankWidth - gstWidth;
+
+  const boxHeight = 65;
+
+  const gstX = startX + bankWidth;
+  const totalX = gstX + gstWidth;
+
+  // ===== TOP THREE BOXES =====
+
+// ===== FOOTER BOXES =====
+
+doc.rect(startX, startY, bankWidth, boxHeight).stroke();
+
+doc.rect(gstX, startY, gstWidth, boxHeight).stroke();
+
+doc.rect(totalX, startY, totalWidth, boxHeight).stroke();
+
+  // ===== BANK DETAILS =====
+
+  doc.text(`Bank Name: ${company.bankName}`, startX + 6, startY + 10);
+
+  doc.text(`A/C No: ${company.accountNo}`, startX + 6, startY + 25);
+
+  doc.text(`IFSC Code: ${company.ifsc}`, startX + 6, startY + 40);
+
+
+  // ===== GST BOX =====
+
+doc.text(`GST PAYABLE   E. & O. E`, gstX + 6, startY + 10);
+doc.text(`CONSIGNOR`, gstX + 6, startY + 28);
+doc.text(`CONSIGNEE`, gstX + 6, startY + 45);
+doc.text(`PAN NO- ${company.pan}`, gstX + 80, startY + 45);
+
+
+  // ===== TOTAL BOX =====
+
+const labelX = totalX + 8;
+const valueX = totalX + totalWidth - 90;
+
+
+
+doc.text("TOTAL", labelX, startY + 10);
+
+doc.text(
+  `Rs ${Number(data.grandTotal).toLocaleString("en-IN")}`,
+  valueX,
+  startY + 10,
+  { width: 70, align: "right" }
+);
+
+doc.text("ADVANCE", labelX, startY + 28);
+
+doc.text(
+  `Rs ${Number(data.totalAdvance).toLocaleString("en-IN")}`,
+  valueX,
+  startY + 28,
+  { width: 70, align: "right" }
+);
+
+doc.font("Helvetica-Bold");
+
+doc.text("NETT.BAL", labelX, startY + 46);
+
+doc.text(
+  `Rs ${Number(data.netBalance).toLocaleString("en-IN")}`,
+  valueX,
+  startY + 46,
+  { width: 70, align: "right" }
+);
+
+doc.font("Helvetica");
+
+
+  // ===== AMOUNT IN WORDS BOX =====
+
+  const wordsY = startY + boxHeight +2;
+
+
+
+  doc.text(
+    `Rupees ${convertNumberToWords(data.netBalance)} Only`,
+    startX + 8,
+    wordsY + 8
+  );
+
+
+  // ===== SIGNATURE =====
+
+  doc.fontSize(10);
+
+
+
+const signX = doc.page.width - 220;  // right side
+const signY = wordsY + 8;            // reduce gap
+
+doc.text(
+  `For ${company.name}`,
+  signX,
+  signY,
+  { width: 190, align: "right" }
+);
+
+doc.text(
+  "Proprietor",
+  signX,
+  signY + 30,
+  { width: 190, align: "right" }
+);
+
+
+
+}
+
 
 app.post("/generate-pdf", (req, res) => {
 
-console.log("PDFFF recvd")
+  console.log("PDF received");
 
   const data = req.body;
   const company = companyDetails[data.owner];
@@ -77,136 +205,273 @@ console.log("PDFFF recvd")
     margin: 40
   });
 
+
+  // PAGE BORDER
+doc.rect(20, 20, doc.page.width - 40, doc.page.height - 40).stroke();
+
   res.setHeader("Content-Type", "application/pdf");
   res.setHeader("Content-Disposition", "attachment; filename=invoice.pdf");
 
   doc.pipe(res);
 
-  // -------------------
-  // COMPANY HEADER
-  // -------------------
+  // HEADER//////////////////////////////////////////
 
-  doc.fontSize(20).text(company.name, { align: "center" });
 
-  doc.fontSize(11).text(company.subtitle, { align: "center" });
 
-  doc.text(company.address, { align: "center" });
 
-  doc.text(`Mob: ${company.mobile}   Email: ${company.email}`, {
-    align: "center"
-  });
-
-  doc.moveDown();
-
-  doc.fontSize(16).text("TRANSPORTATION INVOICE", {
-    align: "center"
-  });
-
-  doc.moveDown();
-
-  // -------------------
-  // BILL INFO
-  // -------------------
-
-  doc.fontSize(11);
-
-  doc.text(`M/s: ${data.msName}`);
-  doc.text(`A/c: ${data.account}`);
-  if(data.jobNo){
-    doc.text(`JOB No: ${data.jobNo}`);
-  }  
-  doc.text(`Bill No: ${data.billNo}`);
-  doc.text(`Date: ${data.date}`);
-
-  doc.moveDown();
-
-  // -------------------
-  // VEHICLE DETAILS
-  // -------------------
-
-  (data.vehicles || []).forEach((v, i) => {
-
-    doc.fontSize(11).text(`Vehicle ${i + 1}`);
-
-    doc.text(`Date: ${v.rowDate}`);
-    doc.text(`Truck: ${v.truckNo}`);
-    doc.text(`Container: ${v.containerNo}`);
-
-    doc.text(`Route: ${v.from} --> ${v.to}`);
-
-    doc.text(`MT Yard: ${v.mtYard}`);
-
-    doc.text(`Weight: ${v.kgs}`);
-
-    doc.text(`Size: ${v.size}`);
-
-    doc.text(`Rate: ₹${Number(v.rate).toLocaleString()}`);
-
-    if(Array.isArray(v.charges)) {
-      v.charges.forEach((c) => {
-      const label = c.label || "CHARGE";
-      const amount = Number(c.amount || 0).toLocaleString();
-
-      doc.text(`${label}:₹${amount}`);
-
+// COMPANY NAME
+doc.font("Helvetica-Bold")
+   .fontSize(22)
+   .text(company.name, {
+     align: "center"
    });
+
+// SUBTITLE
+doc.moveDown(0.2);
+
+doc.font("Helvetica-Bold")
+   .fontSize(11)
+   .text(company.subtitle, {
+     align: "center"
+   });
+
+// ADDRESS
+doc.moveDown(0.2);
+
+doc.font("Helvetica")
+   .fontSize(9)
+   .text(company.address, {
+     align: "center"
+   });
+
+// CONTACT DETAILS
+doc.moveDown(0.1);
+
+doc.font("Helvetica")
+   .fontSize(9)
+   .text(
+     `Mob: ${company.mobile}   Email: ${company.email}`,
+     {
+       align: "center"
+     }
+   );
+
+doc.moveDown(0.6);
+
+
+
+
+  //TITLE///////////////////////
+
+
+doc.moveDown(0.6);
+
+// top dotted line
+doc.strokeColor("#888")
+   .dash(2, { space: 2 })
+   .moveTo(40, doc.y)
+   .lineTo(doc.page.width - 40, doc.y)
+   .stroke()
+   .undash();
+
+// spacing between line and title
+const titleY = doc.y + 8;
+
+// title
+doc.strokeColor("black")
+   .fontSize(14)
+   .text("TRANSPORTATION INVOICE", 0, titleY, { align: "center" });
+
+// bottom dotted line (same gap as top)
+const bottomLineY = titleY + 14;
+
+doc.strokeColor("#888")
+   .dash(2, { space: 2 })
+   .moveTo(40, bottomLineY)
+   .lineTo(doc.page.width - 40, bottomLineY)
+   .stroke()
+   .undash();
+
+doc.strokeColor("black");
+
+// move cursor below section
+doc.y = bottomLineY + 10;
+
+
+
+  // BILL INFO
+
+
+
+doc.fontSize(9);
+
+const leftX = 40;
+const middleX = doc.page.width / 2 - 60;
+const rightX = doc.page.width - 160;
+
+const infoY = doc.y;
+
+// LEFT
+doc.text(`M/s : ${data.msName}`, leftX, infoY);
+doc.text(`A/c : ${data.account}`, leftX, infoY + 15);
+
+// MIDDLE (JOB NO)
+if (data.jobNo) {
+  doc.text(`JOB NO : ${data.jobNo}`, middleX, infoY);
+}
+
+// RIGHT
+doc.text(
+  `BILL NO : ${data.billNo}`,
+  doc.page.width - 200,
+  infoY,
+  { width: 160, align: "right" }
+);
+
+doc.text(
+  `DATE : ${data.date}`,
+  doc.page.width - 200,
+  infoY + 15,
+  { width: 160, align: "right" }
+);
+
+doc.moveDown();
+
+
+
+  // line separator
+  
+doc.moveTo(20, doc.y).lineTo(doc.page.width - 20, doc.y).stroke();
+  doc.moveDown(0.5);
+
+  // VEHICLES
+(data.vehicles || []).forEach((v, i) => {
+
+  doc.moveDown(0.5);
+
+
+  const y = doc.y;
+
+  //690
+
+  const leftX = 40;
+  const middleX = 180;
+  const rightX = 470;
+
+  // LEFT COLUMN
+  doc.text(`DATE: ${v.rowDate}`, leftX, y);
+  doc.text(`TRUCK: ${v.truckNo}`, leftX, y + 15);
+  doc.text(`CONT NO: ${v.containerNo}`, leftX, y + 30);
+
+  // MIDDLE COLUMN
+  doc.text(`ROUTE: ${v.from} ---> ${v.to}`, middleX, y);
+  doc.text(`MT YARD: ${v.mtYard}`, middleX, y + 15);
+  doc.text(`WEIGHT: ${v.kgs}`, middleX, y + 30);
+  doc.text(`SIZE: ${v.size}`, middleX, y + 45);
+
+  // RIGHT COLUMN
+  
+  
+  
+  
+let chargeY = y;
+
+const chargeLabelX = rightX -20;   // labels slightly left for better alignment
+const chargeValueX = 525;     // value always near page edge
+
+const labelWidth = 90;       // smaller label column
+const valueWidth = 40;
+
+
+
+function drawCharge(label, value) {
+
+  const labelText = `${label}:`;
+
+  const labelHeight = doc.heightOfString(labelText, {
+    width: labelWidth
+  });
+
+  // label
+  doc.text(labelText, chargeLabelX, chargeY, {
+    width: labelWidth
+  });
+
+  // value
+  doc.text(
+    Number(value || 0).toLocaleString(),
+    chargeValueX,
+    chargeY,
+    { width: valueWidth, align: "right" }
+  );
+
+  chargeY += Math.max(labelHeight, 15);
+}
+
+
+
+drawCharge("RATE", v.rate);
+
+if (Array.isArray(v.charges)) {
+  v.charges.forEach((c) => {
+    drawCharge(c.label, c.amount);
+  });
+}
+
+drawCharge("ADVANCE", v.advance);
+
+
+
+doc.moveTo(chargeLabelX, chargeY + 5)
+   .lineTo(doc.page.width - 30, chargeY + 5)
+   .dash(3, { space: 2 })
+   .stroke()
+   .undash();
+
+   
+chargeY += 15;
+
+
+
+doc.font("Helvetica-Bold");
+
+drawCharge("Total", v.total);
+
+doc.font("Helvetica");
+
+
+// separator line between vehicles
+doc
+  .strokeColor("#bfbfbf")
+  .dash(2, { space: 2 })
+  .moveTo(40, chargeY + 10)
+  .lineTo(doc.page.width - 30, chargeY + 10)
+  .stroke()
+  .undash()
+  .strokeColor("black");
+
+doc.y = Math.max(y + 70, chargeY + 20);
+
+
+  doc.y = Math.max(y + 70, chargeY + 20);
+
+});
+
+
+  // FOOTER POSITION CHECK
+
+  if (doc.y > doc.page.height - 220) {
+    doc.addPage();
   }
 
-    doc.text(`Advance: ₹${Number(v.advance).toLocaleString()}`);
+  drawFooter(doc, data, company);
 
-    doc.text(`Vehicle Total: ₹${Number(v.total).toLocaleString()}`);
-    
-
-    doc.moveDown(0.8);
-    doc.moveTo(40, doc.y).lineTo(555,doc.y).stroke();
-    doc.moveDown();
-  });
-
-  // -------------------
-  // TOTALS
-  // -------------------
-
-  doc.moveDown();
-
-  doc.fontSize(13).text(`Grand Total: ₹${data.grandTotal}`);
-
-  doc.text(`Advance: ₹${data.totalAdvance}`);
-
-  doc.text(`Net Balance: ₹${data.netBalance}`);
-
-  doc.moveDown();
-
-  // -------------------
-  // BANK DETAILS
-  // -------------------
-
-  doc.fontSize(11).text(`Bank: ${company.bankName}`);
-
-  doc.text(`A/C No: ${company.accountNo}`);
-
-  doc.text(`IFSC: ${company.ifsc}`);
-
-  doc.text(`PAN: ${company.pan}`);
-
-  doc.moveDown();
-
-  doc.text(`Rupees ${convertNumberToWords(data.netBalance)} Only`);
-
-  doc.moveDown();
-
-  doc.text(`For ${company.name}`, { align: "right" });
-
-  doc.text("Proprietor", { align: "right" });
 
   doc.end();
 });
 
 const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
+  console.log(`Server running on port ${PORT}`);
 });
-
-
-//  app.listen(5000, () => {
-//    console.log("Server running on port 5000")
-//  });
