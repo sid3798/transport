@@ -61,7 +61,7 @@ function Transport() {
         id: Date.now(),
         rowDate: date,
         truckNo: "",
-        contNo: "",
+        containerNo: "",
         from: "",
         to: "",
         mtYard:"",
@@ -156,7 +156,8 @@ function Transport() {
 
 const handleDownloadPDF = async () => {
   try {
-    const response = await fetch("https://transport-print.onrender.com/generate-pdf", {
+    //const response = await fetch("https://transport-print.onrender.com/generate-pdf", {
+    const response = await fetch("http://localhost:5000/generate-pdf", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -170,6 +171,14 @@ const handleDownloadPDF = async () => {
         jobNo,
         vehicles: vehicles.map(v => ({
           ...v,
+          charges: v.charges.map(c =>({
+            label:
+            c.label ==="OTHER"
+             ? (c.customLabel && c.customLabel.trim() !==
+             ""? c.customLabel: "OTHER")
+             :(c.label || "CHARGE"),
+            amount: Number(c.amount||0)
+          })),
           total: getRowTotal(v)
         })),
         grandTotal,
@@ -186,10 +195,14 @@ const handleDownloadPDF = async () => {
     a.download = `${billNo}.pdf`;
     a.click();
 
+    window.URL.revokeObjectURL(url);
+
   } catch (error) {
     console.error("PDF Generation Error:", error);
   }
 };
+
+
 
   return (
     <div className="container">

@@ -4,8 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "postinstall": "npx puppeteer browseres install chrome"
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
@@ -13,6 +12,6 @@
   "dependencies": {
     "cors": "^2.8.6",
     "express": "^5.2.1",
-    "puppeteer": "^24.37.5"
+    "pdfkit": "^0.17.2"
   }
 }
