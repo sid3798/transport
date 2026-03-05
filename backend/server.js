@@ -3,6 +3,19 @@ const cors = require("cors");
 const PDFDocument = require("pdfkit");
 //const { width } = require("pdfkit/js/page");
 
+const { google } = require("googleapis");
+const stream = require("stream");
+
+const auth = new google.auth.GoogleAuth({
+  keyFile: "service-account.json",
+  scopes: ["https://www.googleapis.com/auth/drive.file"],
+});
+
+const drive = google.drive({
+  version: "v3",
+  auth,
+});
+
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
@@ -16,7 +29,7 @@ const companyDetails = {
     email: "saurabhgadge444@gmail.com",
     bankName: "SARASWAT BANK",
     accountNo: "610000000012951",
-    ifsc: "SRCB00000446",
+    ifsc: "SRCB0000446",
     pan: "DDAPG6320P",
   },
   SW: {
@@ -26,10 +39,15 @@ const companyDetails = {
     mobile: "9820795569/8108585807",
     email: "laxmangadge1234@gmail.com",
     bankName: "IDBI Bank",
-    accountNo: "030665380000064",
+    accountNo: "0306653800000064",
     ifsc: "IBKL0000306",
-    pan: "AIPG3412N",
+    pan: "AIGPG3412N",
   },
+};
+
+const driveFolders = {
+  SG: "1ZWqbYBsUNcUv3eEYR0x58Kvw417KsPoK",
+  SW: "13rXGURqcFtgfuGcEALg538qvqQuMbHK4",
 };
 
 function convertNumberToWords(num) {
@@ -193,12 +211,31 @@ doc.text(
 }
 
 
+function formatDate(dateString) {
+  if (!dateString) return "";
+
+  const date = new Date(dateString);
+
+  const options = {
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+  };
+
+  return date.toLocaleDateString("en-GB", options);
+}
+
+
+
 app.post("/generate-pdf", (req, res) => {
 
   console.log("PDF received");
 
   const data = req.body;
+  const folderId = driveFolders[data.owner];
   const company = companyDetails[data.owner];
+
+  
 
   const billText = data.billNo;            // full text for pdf name
   const billNo = data.billNo.split(" ")[0]; // only first word for printing
@@ -207,6 +244,9 @@ app.post("/generate-pdf", (req, res) => {
     size: "A4",
     margin: 40
   });
+
+  const buffers = [];
+doc.on("data", buffers.push.bind(buffers));
 
 
   // PAGE BORDER
@@ -218,7 +258,9 @@ doc.rect(20, 20, doc.page.width - 40, doc.page.height - 40).stroke();
   `attachment; filename=${billText}.pdf`
 );
 
-  doc.pipe(res);
+
+
+doc.pipe(res);
 
   // HEADER//////////////////////////////////////////
 
@@ -335,7 +377,7 @@ doc.text(
 );
 
 doc.text(
-  `DATE : ${data.date}`,
+  `DATE : ${formatDate(data.date)}`,
   doc.page.width - 200,
   infoY + 15,
   { width: 160, align: "right" }
@@ -365,7 +407,7 @@ doc.moveTo(20, doc.y).lineTo(doc.page.width - 20, doc.y).stroke();
   const rightX = 470;
 
   // LEFT COLUMN
-  doc.text(`DATE: ${v.rowDate}`, leftX, y);
+  doc.text(`DATE: ${formatDate(v.rowDate)}`, leftX, y);
   doc.text(`TRUCK: ${v.truckNo}`, leftX, y + 15);
   doc.text(`CONT NO: ${v.containerNo}`, leftX, y + 30);
 
@@ -414,9 +456,19 @@ function drawCharge(label, value) {
   chargeY += Math.max(labelHeight, 15);
 }
 
+if (v.advance) {
+  drawCharge("ADVANCE", v.advance);
+}
+
+if (v.kata) {
+  drawCharge("KATA", v.kata);
+}
+
+if (v.mt) {
+  drawCharge("MT", v.mt);
+}
 
 
-drawCharge("RATE", v.rate);
 
 if (Array.isArray(v.charges)) {
   v.charges.forEach((c) => {
@@ -424,7 +476,9 @@ if (Array.isArray(v.charges)) {
   });
 }
 
-drawCharge("ADVANCE", v.advance);
+
+
+drawCharge("RATE", v.rate); // rate should always print
 
 
 
@@ -470,10 +524,41 @@ doc.y = Math.max(y + 70, chargeY + 20);
     doc.addPage();
   }
 
-  drawFooter(doc, data, company);
+drawFooter(doc, data, company);
+
+doc.on("end", async () => {
+
+  try {
+
+    const pdfBuffer = Buffer.concat(buffers);
+
+    const bufferStream = new stream.PassThrough();
+    bufferStream.end(pdfBuffer);
+
+    await drive.files.create({
+      requestBody: {
+        name: `${data.billNo}.pdf`,
+        parents: [folderId],
+      },
+      media: {
+        mimeType: "application/pdf",
+        body: bufferStream,
+      },
+    });
+
+    console.log("✅ Uploaded to Google Drive");
+
+  } catch (error) {
+
+    console.error("❌ Drive Upload Error:", error);
+
+  }
+
+});
+
+doc.end();
 
 
-  doc.end();
 });
 
 const PORT = process.env.PORT || 5000;
