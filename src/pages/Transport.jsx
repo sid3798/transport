@@ -11,7 +11,7 @@ function Transport() {
 
   const [vehicles, setVehicles] = useState([]);
 
-  const chargeOptions = ["KATA", "MT", "TEA", "UNLOADING", "FREIGHT", "OTHER"];
+  const chargeOptions = ["TEA", "UNLOADING", "FREIGHT", "LOADING", "PARKING", "OTHER"];
 
   // ---------- FY + BILL ----------
   const getFY = (selectedDate) => {
@@ -47,11 +47,7 @@ function Transport() {
     return `${selectedOwner}|${fy}|${padded}`;
   };
 
-  useEffect(() => {
-    if (date) {
-      setBillNo(generateBillNo(owner, date));
-    }
-  }, [owner, date]);
+
 
   // ---------- VEHICLE ----------
   const addVehicle = () => {
@@ -67,8 +63,10 @@ function Transport() {
         mtYard:"",
         kgs: "",
         size: "",
-        advance: 0,
-        rate: 0,
+        advance: "",
+        mt: "",
+        kata: "",
+        rate: "",
         charges: [],
         expanded: true,
       },
@@ -139,7 +137,12 @@ function Transport() {
       (sum, c) => sum + Number(c.amount || 0),
       0
     );
-    return Number(v.rate || 0) + chargeTotal;
+    return (
+  Number(v.rate || 0) +
+  Number(v.kata || 0) +
+  Number(v.mt || 0) +
+  chargeTotal
+);
   };
 
   const grandTotal = vehicles.reduce(
@@ -204,15 +207,61 @@ const handleDownloadPDF = async () => {
 
 
 
+const handleUploadBill = async () => {
+
+  try {
+
+    const response = await fetch("http://localhost:5000/upload-bill", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        owner,
+        billNo,
+        date,
+        msName,
+        account,
+        jobNo,
+        vehicles,
+        grandTotal,
+        totalAdvance,
+        netBalance
+      })
+    });
+
+    const result = await response.json();
+
+    alert("Bill Uploaded to Google Drive ✔");
+
+  } catch (error) {
+    console.error(error);
+    alert("Upload Failed");
+  }
+
+};
+
+
+
   return (
     <div className="container">
       <h1>🚛 Transport Billing</h1>
 
-<div style={{ textAlign: "right", marginBottom: "20px" }}>
+
+
+<div style={{ textAlign: "right", marginBottom: "20px", display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+
   <button className="print-btn" onClick={handleDownloadPDF}>
-    📄 Download PDF
+    📄 Download Bill
   </button>
+
+  <button className="print-btn" onClick={handleUploadBill}>
+    ☁ Upload Bill
+  </button>
+
 </div>
+
+
     {/* PRINT INVOICE LAYOUT */}
 <div className="print-invoice">
   
@@ -264,6 +313,8 @@ const handleDownloadPDF = async () => {
         <span>Advance:</span>
         <span>₹{v.advance}</span>
       </div>
+
+
 
     <div className="finance-row charges-label">
   <span>Charges:</span>
@@ -435,6 +486,18 @@ const handleDownloadPDF = async () => {
                   <label>Advance</label>
                   <input type="number" value={v.advance}
                     onChange={(e) => updateVehicle(v.id, "advance", e.target.value)} />
+                </div>
+
+                <div className="field">
+                  <label>MT</label>
+                  <input type="number" value={v.mt}
+                    onChange={(e) => updateVehicle(v.id, "mt", e.target.value)} />
+                </div>
+
+                <div className="field">
+                  <label>KATA</label>
+                  <input type="number" value={v.kata}
+                    onChange={(e) => updateVehicle(v.id, "kata", e.target.value)} />
                 </div>
 
                 <div className="field">
