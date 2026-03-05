@@ -126,7 +126,7 @@ const valueX = totalX + totalWidth - 90;
 doc.text("TOTAL", labelX, startY + 10);
 
 doc.text(
-  `Rs ${Number(data.grandTotal).toLocaleString("en-IN")}`,
+  `${Number(data.grandTotal).toLocaleString("en-IN")}`,
   valueX,
   startY + 10,
   { width: 70, align: "right" }
@@ -135,7 +135,7 @@ doc.text(
 doc.text("ADVANCE", labelX, startY + 28);
 
 doc.text(
-  `Rs ${Number(data.totalAdvance).toLocaleString("en-IN")}`,
+  `${Number(data.totalAdvance).toLocaleString("en-IN")}`,
   valueX,
   startY + 28,
   { width: 70, align: "right" }
@@ -146,7 +146,7 @@ doc.font("Helvetica-Bold");
 doc.text("NETT.BAL", labelX, startY + 46);
 
 doc.text(
-  `Rs ${Number(data.netBalance).toLocaleString("en-IN")}`,
+  `${Number(data.netBalance).toLocaleString("en-IN")}`,
   valueX,
   startY + 46,
   { width: 70, align: "right" }
@@ -396,10 +396,27 @@ doc.moveTo(20, doc.y).lineTo(doc.page.width - 20, doc.y).stroke();
   doc.text(`CONT NO: ${v.containerNo}`, leftX, y + 30);
 
   // MIDDLE COLUMN
-  doc.text(`ROUTE: ${v.from} ---> ${v.to}`, middleX, y);
-  doc.text(`MT YARD: ${v.mtYard}`, middleX, y + 15);
-  doc.text(`WEIGHT: ${v.kgs}`, middleX, y + 30);
-  doc.text(`SIZE: ${v.size}`, middleX, y + 45);
+let middleY = y;
+
+if (v.from || v.to) {
+  doc.text(`ROUTE: ${v.from || ""} ---> ${v.to || ""}`, middleX, middleY);
+  middleY += 15;
+}
+
+if (v.mtYard) {
+  doc.text(`MT YARD: ${v.mtYard}`, middleX, middleY);
+  middleY += 15;
+}
+
+if (v.kgs) {
+  doc.text(`WEIGHT: ${v.kgs}`, middleX, middleY);
+  middleY += 15;
+}
+
+if (v.size) {
+  doc.text(`SIZE: ${v.size}`, middleX, middleY);
+  middleY += 15;
+}
 
   // RIGHT COLUMN
   
