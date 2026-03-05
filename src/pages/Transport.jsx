@@ -85,7 +85,7 @@ function Transport() {
     setVehicles((prev) =>
       prev.map((v) =>
         v.id === id && v.charges.length < 5
-          ? { ...v, charges: [...v.charges, { label: "", amount: 0 }] }
+          ? { ...v, charges: [...v.charges, { label: "", amount: "" }] }
           : v
       )
     );
