@@ -343,8 +343,9 @@ const handleDownloadPDF = async () => {
         <div className="field">
           <label>Owner</label>
           <select value={owner} onChange={(e) => setOwner(e.target.value)}>
-            <option value="SG">SG</option>
             <option value="SW">Siddheshwar Transport</option>
+            <option value="SG">SG</option>
+            
           </select>
         </div>
 
