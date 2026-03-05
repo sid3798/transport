@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 function Transport() {
-  const [owner, setOwner] = useState("SG");
+  const [owner, setOwner] = useState("SW");
   const [date, setDate] = useState("");
   const [billNo, setBillNo] = useState("");
   const [msName, setMsName] = useState("");
