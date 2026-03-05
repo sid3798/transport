@@ -213,11 +213,11 @@ const handleDownloadPDF = async () => {
 
   return (
     <div className="container">
-      <h1>🚛 Transport Billing 22</h1>
+      <h1>🚛 Transport Billing </h1>
 
 
 
-<div style={{ textAlign: "right", marginBottom: "20px", display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+<div style={{ textAlign: "right", marginBottom: "5px", display: "flex", gap: "10px", justifyContent: "flex-end" }}>
 
   <button className="print-btn" onClick={handleDownloadPDF}>
     📄 Download Bill

@@ -229,7 +229,7 @@ select {
 @media (max-width: 768px) {
 
   .container {
-    padding: 15px;
+    padding: 10px;
   }
 
   .field {
