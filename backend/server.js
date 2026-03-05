@@ -200,6 +200,9 @@ app.post("/generate-pdf", (req, res) => {
   const data = req.body;
   const company = companyDetails[data.owner];
 
+  const billText = data.billNo;            // full text for pdf name
+  const billNo = data.billNo.split(" ")[0]; // only first word for printing
+
   const doc = new PDFDocument({
     size: "A4",
     margin: 40
@@ -210,7 +213,10 @@ app.post("/generate-pdf", (req, res) => {
 doc.rect(20, 20, doc.page.width - 40, doc.page.height - 40).stroke();
 
   res.setHeader("Content-Type", "application/pdf");
-  res.setHeader("Content-Disposition", "attachment; filename=invoice.pdf");
+  res.setHeader(
+  "Content-Disposition",
+  `attachment; filename=${billText}.pdf`
+);
 
   doc.pipe(res);
 
@@ -322,7 +328,7 @@ if (data.jobNo) {
 
 // RIGHT
 doc.text(
-  `BILL NO : ${data.billNo}`,
+  `BILL NO : ${billNo}`,
   doc.page.width - 200,
   infoY,
   { width: 160, align: "right" }
