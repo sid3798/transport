@@ -207,39 +207,7 @@ const handleDownloadPDF = async () => {
 
 
 
-const handleUploadBill = async () => {
 
-  try {
-
-    const response = await fetch("http://localhost:5000/upload-bill", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        owner,
-        billNo,
-        date,
-        msName,
-        account,
-        jobNo,
-        vehicles,
-        grandTotal,
-        totalAdvance,
-        netBalance
-      })
-    });
-
-    const result = await response.json();
-
-    alert("Bill Uploaded to Google Drive ✔");
-
-  } catch (error) {
-    console.error(error);
-    alert("Upload Failed");
-  }
-
-};
 
 
 
@@ -255,9 +223,6 @@ const handleUploadBill = async () => {
     📄 Download Bill
   </button>
 
-  <button className="print-btn" onClick={handleUploadBill}>
-    ☁ Upload Bill
-  </button>
 
 </div>
 

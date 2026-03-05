@@ -3,18 +3,6 @@ const cors = require("cors");
 const PDFDocument = require("pdfkit");
 //const { width } = require("pdfkit/js/page");
 
-const { google } = require("googleapis");
-const stream = require("stream");
-
-const auth = new google.auth.GoogleAuth({
-  keyFile: "service-account.json",
-  scopes: ["https://www.googleapis.com/auth/drive.file"],
-});
-
-const drive = google.drive({
-  version: "v3",
-  auth,
-});
 
 const app = express();
 app.use(cors());
@@ -45,10 +33,7 @@ const companyDetails = {
   },
 };
 
-const driveFolders = {
-  SG: "1ZWqbYBsUNcUv3eEYR0x58Kvw417KsPoK",
-  SW: "13rXGURqcFtgfuGcEALg538qvqQuMbHK4",
-};
+
 
 function convertNumberToWords(num) {
 
@@ -245,8 +230,7 @@ app.post("/generate-pdf", (req, res) => {
     margin: 40
   });
 
-  const buffers = [];
-doc.on("data", buffers.push.bind(buffers));
+
 
 
   // PAGE BORDER
@@ -526,35 +510,7 @@ doc.y = Math.max(y + 70, chargeY + 20);
 
 drawFooter(doc, data, company);
 
-doc.on("end", async () => {
 
-  try {
-
-    const pdfBuffer = Buffer.concat(buffers);
-
-    const bufferStream = new stream.PassThrough();
-    bufferStream.end(pdfBuffer);
-
-    await drive.files.create({
-      requestBody: {
-        name: `${data.billNo}.pdf`,
-        parents: [folderId],
-      },
-      media: {
-        mimeType: "application/pdf",
-        body: bufferStream,
-      },
-    });
-
-    console.log("✅ Uploaded to Google Drive");
-
-  } catch (error) {
-
-    console.error("❌ Drive Upload Error:", error);
-
-  }
-
-});
 
 doc.end();
 
