@@ -217,7 +217,7 @@ app.post("/generate-pdf", (req, res) => {
   console.log("PDF received");
 
   const data = req.body;
-  const folderId = driveFolders[data.owner];
+  
   const company = companyDetails[data.owner];
 
   
