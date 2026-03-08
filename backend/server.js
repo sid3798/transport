@@ -623,13 +623,13 @@ app.get("/next-bill-number", async (req, res) => {
     console.log("FOLDER ID USED:", folderId);
 
     const response = await drive.files.list({
-      q: `'${folderId}' in parents and trashed=false`,
-      fields: "files(name)",
-      pageSize: 1000,
-      supportsAllDrives: true,
-      includeItemsFromAllDrives: true
-    });
-
+  q: `'${folderId}' in parents and trashed=false`,
+  fields: "files(id,name)",
+  pageSize: 1000,
+  includeItemsFromAllDrives: true,
+  supportsAllDrives: true,
+  corpora: "allDrives"
+});
     console.log("FILES FOUND:", response.data.files.length);
 
     let maxBill = 0;
