@@ -7,7 +7,7 @@ const TOKEN_PATH = path.join(__dirname, "token.json");
 const CREDENTIALS_PATH = path.join(__dirname, "google-oauth.json");
 
 async function authorize() {
-  const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH));
+ const credentials = JSON.parse(process.env.GOOGLE_OAUTH_JSON);
   const { client_secret, client_id, redirect_uris } = credentials.installed;
 
   const oAuth2Client = new google.auth.OAuth2(
