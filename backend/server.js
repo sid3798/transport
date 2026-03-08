@@ -623,7 +623,7 @@ app.get("/next-bill-number", async (req, res) => {
     console.log("FOLDER ID USED:", folderId);
 
     const response = await drive.files.list({
-      q: `'${folderId}' in parents and mimeType='application/pdf' and trashed=false`,
+      q: `'${folderId}' in parents and trashed=false`,
       fields: "files(name)",
       pageSize: 1000,
       supportsAllDrives: true,
