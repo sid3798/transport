@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { google } = require("googleapis");
-const open = require("open").default;
+//const open = require("open").default;
 
 const TOKEN_PATH = path.join(__dirname, "token.json");
 const CREDENTIALS_PATH = path.join(__dirname, "google-oauth.json");
@@ -28,7 +28,7 @@ async function authorize() {
   });
 
   console.log("Authorize this app by visiting this url:", authUrl);
-  await open(authUrl);
+  //await open(authUrl);
 
   const readline = require("readline").createInterface({
     input: process.stdin,

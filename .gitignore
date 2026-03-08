@@ -1,3 +1,18 @@
-backend/config/drive-key.json
+# node modules
+node_modules
+
+# build files
+dist
+build
+
+# environment files
+.env
+
+# Google OAuth secrets
 backend/config/token.json
 backend/config/google-oauth.json
+backend/config/drive-key.json
+
+# logs
+npm-debug.log
+yarn-debug.log
