@@ -620,11 +620,18 @@ app.get("/next-bill-number", async (req, res) => {
 
     const folderId = DRIVE_FOLDERS[owner];
 
-    const response = await drive.files.list({
-      q: `'${folderId}' in parents and mimeType='application/pdf'`,
-      fields: "files(name)",
-      pageSize: 1000
-    });
+    const folderId = DRIVE_FOLDERS[owner];
+
+console.log("OWNER:", owner);
+console.log("FOLDER ID USED:", folderId);
+
+const response = await drive.files.list({
+  q: `'${folderId}' in parents and trashed=false`,
+  fields: "files(name)",
+  pageSize: 1000,
+  supportsAllDrives: true,
+  includeItemsFromAllDrives: true
+});
 
     let maxBill = 0;
 
