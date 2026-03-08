@@ -630,17 +630,11 @@ app.get("/next-bill-number", async (req, res) => {
 
     response.data.files.forEach(file => {
 
-      const match = file.name.match(/^(\d+)/);
+const billNo = parseInt(file.name.split(" ")[0]);
 
-      if (match) {
-
-        const billNo = parseInt(match[1]);
-
-        if (billNo > maxBill) {
-          maxBill = billNo;
-        }
-
-      }
+if (!isNaN(billNo) && billNo > maxBill) {
+  maxBill = billNo;
+}
 
     });
 
