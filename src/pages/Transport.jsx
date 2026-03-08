@@ -180,8 +180,8 @@ const handleDownloadPDF = async () => {
   const toastId = toast.loading("Bill downloading....");
   toast.success("Bill downloaded. Uploading to Drive...", { id: toastId });
   try {
-    //const response = await fetch("https://transport-print.onrender.com/generate-pdf", {
-    const response = await fetch("http://localhost:5000/generate-pdf", {
+    const response = await fetch("https://transport-print.onrender.com/generate-pdf", {
+    //const response = await fetch("http://localhost:5000/generate-pdf", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
