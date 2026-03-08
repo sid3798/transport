@@ -607,7 +607,6 @@ doc.end();
 });
 
 
-
 // ===============================
 // GET NEXT BILL NUMBER API
 // ===============================
@@ -620,29 +619,41 @@ app.get("/next-bill-number", async (req, res) => {
 
     const folderId = DRIVE_FOLDERS[owner];
 
-console.log("OWNER:", owner);
-console.log("FOLDER ID USED:", folderId);
+    console.log("OWNER:", owner);
+    console.log("FOLDER ID USED:", folderId);
 
-const response = await drive.files.list({
-  q: `'${folderId}' in parents and trashed=false`,
-  fields: "files(name)",
-  pageSize: 1000,
-  supportsAllDrives: true,
-  includeItemsFromAllDrives: true
-});
+    const response = await drive.files.list({
+      q: `'${folderId}' in parents and mimeType='application/pdf' and trashed=false`,
+      fields: "files(name)",
+      pageSize: 1000,
+      supportsAllDrives: true,
+      includeItemsFromAllDrives: true
+    });
+
+    console.log("FILES FOUND:", response.data.files.length);
 
     let maxBill = 0;
 
     response.data.files.forEach(file => {
+
       console.log("FILE NAME:", file.name);
 
-const billNo = parseInt(file.name.split(" ")[0]);
+      // extract number from beginning of filename
+      const match = file.name.match(/^\d+/);
 
-if (!isNaN(billNo) && billNo > maxBill) {
-  maxBill = billNo;
-}
+      if (match) {
+
+        const billNo = parseInt(match[0]);
+
+        if (billNo > maxBill) {
+          maxBill = billNo;
+        }
+
+      }
 
     });
+
+    console.log("MAX BILL FOUND:", maxBill);
 
     res.json({
       nextBillNo: maxBill + 1
@@ -660,7 +671,7 @@ if (!isNaN(billNo) && billNo > maxBill) {
 
 });
 
-
+// end of fetch bill no section
 
 const PORT = process.env.PORT || 5000;
 
