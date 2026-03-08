@@ -606,6 +606,62 @@ doc.end();
 
 });
 
+
+
+// ===============================
+// GET NEXT BILL NUMBER API
+// ===============================
+
+app.get("/next-bill-number", async (req, res) => {
+
+  try {
+
+    const owner = req.query.owner;
+
+    const folderId = DRIVE_FOLDERS[owner];
+
+    const response = await drive.files.list({
+      q: `'${folderId}' in parents and mimeType='application/pdf'`,
+      fields: "files(name)",
+      pageSize: 1000
+    });
+
+    let maxBill = 0;
+
+    response.data.files.forEach(file => {
+
+      const match = file.name.match(/^(\d+)/);
+
+      if (match) {
+
+        const billNo = parseInt(match[1]);
+
+        if (billNo > maxBill) {
+          maxBill = billNo;
+        }
+
+      }
+
+    });
+
+    res.json({
+      nextBillNo: maxBill + 1
+    });
+
+  } catch (err) {
+
+    console.error("Bill number fetch error:", err);
+
+    res.status(500).json({
+      error: "Failed to fetch bill number"
+    });
+
+  }
+
+});
+
+
+
 const PORT = process.env.PORT || 5000;
 
 initDrive()
