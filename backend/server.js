@@ -629,6 +629,7 @@ app.get("/next-bill-number", async (req, res) => {
     let maxBill = 0;
 
     response.data.files.forEach(file => {
+      console.log("FILE NAME:", file.name);
 
 const billNo = parseInt(file.name.split(" ")[0]);
 
