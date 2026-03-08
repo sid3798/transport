@@ -18,7 +18,7 @@ async function initDrive() {
   });
 }
 
-initDrive();
+//initDrive();
 
 const DRIVE_FOLDERS = {
   SW: "13rXGURqcFtgfuGcEALg538qvqQuMbHK4",
@@ -608,6 +608,15 @@ doc.end();
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+initDrive()
+  .then(() => {
+    console.log("Google Drive connected");
+
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+
+  })
+  .catch((err) => {
+    console.error("Drive initialization failed:", err);
+  });
