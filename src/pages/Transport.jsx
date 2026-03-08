@@ -34,6 +34,32 @@ function Transport() {
     return `${String(startYear).slice(2)}-${String(endYear).slice(2)}`;
   };
 
+  useEffect(() => {
+
+  async function fetchBillNo() {
+
+    try {
+
+      const res = await fetch(
+        `https://transport-print.onrender.com/next-bill-number?owner=${owner}`
+      );
+
+      const data = await res.json();
+
+      setBillNo(data.nextBillNo);
+
+    } catch (err) {
+      console.error("Bill number fetch failed", err);
+    }
+
+  }
+
+  fetchBillNo();
+
+}, [owner]);
+
+
+
   const generateBillNo = (selectedOwner, selectedDate) => {
     const fy = getFY(selectedDate);
     if (!fy) return "";
