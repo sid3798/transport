@@ -616,20 +616,26 @@ app.get("/next-bill-number", async (req, res) => {
   try {
 
     const owner = req.query.owner;
-
     const folderId = DRIVE_FOLDERS[owner];
 
     console.log("OWNER:", owner);
     console.log("FOLDER ID USED:", folderId);
 
-    const response = await drive.files.list({
+    console.log("Testing Drive access...");
+const test = await drive.files.list({ pageSize: 10, fields: "files(name)" });
+console.log("Drive test files:", test.data.files);
+
+const response = await drive.files.list({
   q: `'${folderId}' in parents and trashed=false`,
-  fields: "files(id,name)",
+  orderBy: "createdTime desc",
   pageSize: 1000,
-  includeItemsFromAllDrives: true,
-  supportsAllDrives: true,
-  corpora: "allDrives"
+  fields: "files(name)",
+  spaces: "drive"
 });
+
+
+
+console.log("FILES FROM API:", response.data.files);
     console.log("FILES FOUND:", response.data.files.length);
 
     let maxBill = 0;
@@ -638,34 +644,24 @@ app.get("/next-bill-number", async (req, res) => {
 
       console.log("FILE NAME:", file.name);
 
-      // extract number from beginning of filename
       const match = file.name.match(/^\d+/);
 
       if (match) {
-
         const billNo = parseInt(match[0]);
-
-        if (billNo > maxBill) {
-          maxBill = billNo;
-        }
-
+        if (billNo > maxBill) maxBill = billNo;
       }
 
     });
 
     console.log("MAX BILL FOUND:", maxBill);
 
-    res.json({
-      nextBillNo: maxBill + 1
-    });
+    res.json({ nextBillNo: maxBill + 1 });
 
   } catch (err) {
 
     console.error("Bill number fetch error:", err);
 
-    res.status(500).json({
-      error: "Failed to fetch bill number"
-    });
+    res.status(500).json({ error: "Failed to fetch bill number" });
 
   }
 
