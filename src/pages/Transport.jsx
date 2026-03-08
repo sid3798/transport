@@ -267,7 +267,7 @@ const handleDownloadPDF = async () => {
 
 <div style={{ textAlign: "right", marginBottom: "5px", display: "flex", gap: "10px", justifyContent: "flex-end" }}>
 
-    <button className="reset-btn" onClick={handleReset} title="Reset Form">
+    <button className="reset-btn" onClick={() => window.location.reload()} title="Reset Form">
     <FiRefreshCw />
   </button>
 
