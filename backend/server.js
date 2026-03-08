@@ -620,8 +620,6 @@ app.get("/next-bill-number", async (req, res) => {
 
     const folderId = DRIVE_FOLDERS[owner];
 
-    const folderId = DRIVE_FOLDERS[owner];
-
 console.log("OWNER:", owner);
 console.log("FOLDER ID USED:", folderId);
 
