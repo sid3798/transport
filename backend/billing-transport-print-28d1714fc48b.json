@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "billing-transport-print",
+  "private_key_id": "28d1714fc48bd46f87954610b9203ccc066d1404",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCx70CQdadfznF5\neSaMymUcsvmtwH8bujVtewNLwDBk3KfJfuZ+UoOecOVygbb0NKLJ6BS/lz1erPLt\n1BBMr/PtPPmTfdFR6eCc2u+KgJiiqeLF1Ce+pNTYLiZAFJf0/Jx+s4TzbZH8580Z\nE1toTPZars1lSrQJ+W0WtG2B7yj9A2374x85KXprsatyQ3RV4vyVIDPnCRYdTXTV\n+DfhQruYGDIiobKWXE+UKMq+KqqpelHeI8l/d9ijbe5s6V2rRalQ4hj/JJIbGX4M\n8tAYiVDX5BJC8Wu0U/VU8cNJXQ65syT2zsvTjmVWkWT75Ovzi6nC0SL0xj1nhUhR\n/z66sOR1AgMBAAECggEAKqy9CWiOWfYDVSTvT/kCwx1RsJBoa9f/FGDaa4KOmMIr\nI7JhyY40rv1Yqlvd6zfsiww0XbcCKwDDyrJ/rkTM9esX2H3mhATZsAT6SneJJAom\nr1ewqJKT0b1PwzKtNz6WsfSQQGnZB5T4pbj0xVEgDKO78z01bOb7eOSRFwarB/My\nP0y/xou2V2/+vcoTUJYqO/N8C7ZME7EdmEfP9m8Ii9hCDwLIYY55rdRFlRjnak6P\nK14slD6dS3fBJlC5w82iE96Ryi0f+/LAMW1wSQry0iHGrX+oXo1mMbkCU3U36HN1\nqahWwgmU7sBrF58YLkr0jnF9JnfhLrBWeX0cLEQPSQKBgQDWGOm6UE4PUm8/4k9L\nCMveHsa+gacAB2ZofGRwb1LJM+ZIy1kdJjyrWCmixjGT39gsAm6AXxT2m6aIja0x\nNJDr58rVeJmzLtMCcm6w21ERyFEizbgb51DDYbl3LnzuXCOsO6jBS2FRyJOsqnQH\n9VhJVO1WjuUANNkPKNL49biaBwKBgQDUwnLxenjE/Aj03aE1qyPoQc/dlMXdPnAZ\nY69VNCDCbZAuvFjpzKcY4Jgy7H+9+Ipgly7SD7BaCDfEwmBcutxicGjVvRbW07wr\nupuMKL451NVGkqpYl6jrigS7Ti/pKGCQIjaMqM9P8Q8/VlL1TMA+8+59RrCL40PN\n5adPfJYeowKBgHaXijAn93VJRlJuu1lm3/aDubcg/i5n6vQJo2EcaREGbJL6ALzC\nx2xqA3YkrqWoooeOOUNmZ6hKg660O7E72uKxnIsuqIS2dS+vz1yrv3ZILZlHtqnO\nMdBoO2GnIJCv/RqUWV/or1mr7xD/whH+dw73uhfuQy8gFvPsuyAojD7VAoGAX/a0\n0aZkArWLdKbip8phj8jfcRpBhOE8vrbvxoaUoB27AtmBYTMly1rCS3XQyGbqQ1bt\nj2H0MSezv9PMkwbVkLETGBUJ0CwAm9i3gCiAZKVS7VoJ65u8XUELkVBa29eSdnB4\nGkmp+GzKa88L7AiKTdrIn0jbKL2BP8VuCbQwIfECgYApbSfIE14kknG18Vo+jih0\ndeHfHofZK6ggYVvEj9+5A8hfjPC1YY8f/wAPo2gFQEBU1CavdgzDSUD9HnsioOrI\ngJ/n4+XQyhPK5nUAkHGoKUFX2gp75tTMa7mGStabZP+pzQalUI2UVPiVfmDtLBZz\nrPi+N21CHK1I5W/cIS+NRQ==\n-----END PRIVATE KEY-----\n",
+  "client_email": "transport-drive@billing-transport-print.iam.gserviceaccount.com",
+  "client_id": "110967833263115327822",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/transport-drive%40billing-transport-print.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

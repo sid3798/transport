@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
+import { FiRefreshCw } from "react-icons/fi";
 
 function Transport() {
   const [owner, setOwner] = useState("SW");
@@ -157,7 +159,26 @@ function Transport() {
 
   const netBalance = grandTotal - totalAdvance;
 
+
+const handleReset = () => {
+
+  if (!window.confirm("Clear all entered data?")) return;
+
+  setOwner("SW");
+  setDate("");
+  setBillNo("");
+  setMsName("");
+  setAccount("");
+  setJobNo("");
+  setVehicles([]);
+
+};
+
+
+
 const handleDownloadPDF = async () => {
+  const toastId = toast.loading("Bill downloading....");
+  toast.success("Bill downloaded. Uploading to Drive...", { id: toastId });
   try {
     const response = await fetch("https://transport-print.onrender.com/generate-pdf", {
     //const response = await fetch("http://localhost:5000/generate-pdf", {
@@ -202,6 +223,7 @@ const handleDownloadPDF = async () => {
 
   } catch (error) {
     console.error("PDF Generation Error:", error);
+    toast.error("Failed to generate or upload bill", { id: toastId });
   }
 };
 
@@ -219,8 +241,12 @@ const handleDownloadPDF = async () => {
 
 <div style={{ textAlign: "right", marginBottom: "5px", display: "flex", gap: "10px", justifyContent: "flex-end" }}>
 
+    <button className="reset-btn" onClick={handleReset} title="Reset Form">
+    <FiRefreshCw />
+  </button>
+
   <button className="print-btn" onClick={handleDownloadPDF}>
-    📄 Download Bill
+    📄 Download/Upload Bill
   </button>
 
 

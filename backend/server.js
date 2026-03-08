@@ -1,7 +1,34 @@
 const express = require("express");
 const cors = require("cors");
 const PDFDocument = require("pdfkit");
-//const { width } = require("pdfkit/js/page");
+
+const authorize = require("./config/driveAuth");
+const { google } = require("googleapis");
+const streamifier = require("streamifier");
+
+
+let drive;
+
+async function initDrive() {
+  const auth = await authorize();
+
+  drive = google.drive({
+    version: "v3",
+    auth,
+  });
+}
+
+initDrive();
+
+const DRIVE_FOLDERS = {
+  SW: "13rXGURqcFtgfuGcEALg538qvqQuMbHK4",
+  SG: "1ZWqbYBsUNcUv3eEYR0x58Kvw417KsPoK",
+};
+
+
+
+
+
 
 
 const app = express();
@@ -236,15 +263,60 @@ app.post("/generate-pdf", (req, res) => {
   // PAGE BORDER
 doc.rect(20, 20, doc.page.width - 40, doc.page.height - 40).stroke();
 
+//   res.setHeader("Content-Type", "application/pdf");
+//   res.setHeader(
+//   "Content-Disposition",
+//   `attachment; filename=${billText}.pdf`
+// );
+
+
+
+const buffers = [];
+
+doc.on("data", buffers.push.bind(buffers));
+
+doc.on("end", async () => {
+  const pdfBuffer = Buffer.concat(buffers);
+
+  // Send PDF to browser
   res.setHeader("Content-Type", "application/pdf");
   res.setHeader(
-  "Content-Disposition",
-  `attachment; filename=${billText}.pdf`
-);
+    "Content-Disposition",
+    `attachment; filename=${billText}.pdf`
+  );
+  res.send(pdfBuffer);
+
+  // Upload to Google Drive
+  try {
+    const folderId = DRIVE_FOLDERS[data.owner];
 
 
 
-doc.pipe(res);
+
+await drive.files.create({
+  requestBody: {
+    name: `${billText}.pdf`,
+    parents: [folderId]
+  },
+  media: {
+    mimeType: "application/pdf",
+    body: streamifier.createReadStream(pdfBuffer)
+  },
+  fields: "id",
+  supportsAllDrives: true,
+  supportsTeamDrives: true
+});
+
+
+
+    
+
+    console.log("PDF uploaded to Google Drive");
+
+  } catch (err) {
+    console.error("Drive Upload Error:", err);
+  }
+});
 
   // HEADER//////////////////////////////////////////
 

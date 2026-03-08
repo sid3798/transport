@@ -5,6 +5,29 @@ body {
   color: white;
 }
 
+button:hover svg {
+  transform: rotate(180deg);
+  transition: 0.4s;
+}
+
+.reset-btn {
+  background: linear-gradient(135deg, #ff7a18, #ffb347);
+  border: none;
+  color: white;
+  font-size: 18px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.reset-btn:active {
+  transform: scale(0.95);
+}
+
 .container {
   padding: 30px;
   max-width: 1200px;
