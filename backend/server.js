@@ -526,7 +526,7 @@ function drawCharge(label, value) {
     { width: valueWidth, align: "right" }
   );
 
-  chargeY += Math.max(labelHeight, 15);
+  chargeY += Math.max(labelHeight, 13);
 }
 
 // RATE FIRST
@@ -551,42 +551,44 @@ if (Array.isArray(v.charges)) {
 
 // ADVANCE LAST
 if (v.advance) {
+  doc.font("Helvetica-Bold");
   drawCharge("ADVANCE", v.advance);
+  doc.font("Helvetica");
 }
 
 
-doc.moveTo(chargeLabelX, chargeY + 5)
-   .lineTo(doc.page.width - 30, chargeY + 5)
-   .dash(3, { space: 2 })
-   .stroke()
-   .undash();
+// doc.moveTo(chargeLabelX, chargeY + 5)
+//    .lineTo(doc.page.width - 30, chargeY + 5)
+//    .dash(3, { space: 2 })
+//    .stroke()
+//    .undash();
 
    
-chargeY += 15;
+// chargeY += 15;
 
 
 
-doc.font("Helvetica-Bold");
+// doc.font("Helvetica-Bold");
 
-drawCharge("Total", v.total);
+// drawCharge("Total", v.total);
 
-doc.font("Helvetica");
+// doc.font("Helvetica");
 
 
 // separator line between vehicles
 doc
   .strokeColor("#bfbfbf")
   .dash(2, { space: 2 })
-  .moveTo(40, chargeY + 10)
-  .lineTo(doc.page.width - 30, chargeY + 10)
+  .moveTo(40, chargeY + 4)
+  .lineTo(doc.page.width - 30, chargeY + 4)
   .stroke()
   .undash()
   .strokeColor("black");
 
-doc.y = Math.max(y + 70, chargeY + 20);
+doc.y = Math.max(y + 60, chargeY + 12);
 
 
-  doc.y = Math.max(y + 70, chargeY + 20);
+  doc.y = Math.max(y + 70, chargeY + 10);
 
 });
 
