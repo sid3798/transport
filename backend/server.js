@@ -458,15 +458,16 @@ doc.moveTo(20, doc.y).lineTo(doc.page.width - 20, doc.y).stroke();
 
   //690
 
-  const leftX = 40;
-  const middleX = 180;
-  const rightX = 470;
-  let leftY = y;
+let leftY = y;
 
-  // LEFT COLUMN
-  doc.text(`DATE: ${formatDate(v.rowDate)}`, leftX, y);
-  doc.text(`TRUCK: ${v.truckNo}`, leftX, y + 15);
-  if (v.containerNo) {
+// LEFT COLUMN
+doc.text(`DATE: ${formatDate(v.rowDate)}`, leftX, leftY);
+leftY += 15;
+
+doc.text(`TRUCK: ${v.truckNo}`, leftX, leftY);
+leftY += 15;
+
+if (v.containerNo) {
   doc.text(`CONT NO: ${v.containerNo}`, leftX, leftY);
   leftY += 15;
 }
