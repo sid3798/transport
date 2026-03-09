@@ -461,11 +461,15 @@ doc.moveTo(20, doc.y).lineTo(doc.page.width - 20, doc.y).stroke();
   const leftX = 40;
   const middleX = 180;
   const rightX = 470;
+  let leftY = y;
 
   // LEFT COLUMN
   doc.text(`DATE: ${formatDate(v.rowDate)}`, leftX, y);
   doc.text(`TRUCK: ${v.truckNo}`, leftX, y + 15);
-  doc.text(`CONT NO: ${v.containerNo}`, leftX, y + 30);
+  if (v.containerNo) {
+  doc.text(`CONT NO: ${v.containerNo}`, leftX, leftY);
+  leftY += 15;
+}
 
   // MIDDLE COLUMN
 let middleY = y;
@@ -489,6 +493,8 @@ if (v.size) {
   doc.text(`SIZE: ${v.size}`, middleX, middleY);
   middleY += 15;
 }
+
+const middleEndY = middleY;
 
   // RIGHT COLUMN
   
@@ -556,6 +562,7 @@ if (v.advance) {
   doc.font("Helvetica");
 }
 
+const rightEndY = chargeY;
 
 // doc.moveTo(chargeLabelX, chargeY + 5)
 //    .lineTo(doc.page.width - 30, chargeY + 5)
@@ -576,16 +583,20 @@ if (v.advance) {
 
 
 // separator line between vehicles
+
+
+const vehicleBottom = Math.max(middleEndY, rightEndY);
+
 doc
   .strokeColor("#bfbfbf")
   .dash(2, { space: 2 })
-  .moveTo(40, chargeY + 4)
-  .lineTo(doc.page.width - 30, chargeY + 4)
+  .moveTo(40, vehicleBottom + 5)
+  .lineTo(doc.page.width - 30, vehicleBottom + 5)
   .stroke()
   .undash()
   .strokeColor("black");
 
-doc.y = Math.max(y + 60, chargeY + 12);
+doc.y = vehicleBottom + 15;
 
 
   doc.y = Math.max(y + 70, chargeY + 10);
