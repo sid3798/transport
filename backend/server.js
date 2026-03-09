@@ -529,10 +529,11 @@ function drawCharge(label, value) {
   chargeY += Math.max(labelHeight, 15);
 }
 
-if (v.advance) {
-  drawCharge("ADVANCE", v.advance);
-}
+// RATE FIRST
+drawCharge("RATE", v.rate);
 
+
+// CHARGES SECTION
 if (v.kata) {
   drawCharge("KATA", v.kata);
 }
@@ -541,8 +542,6 @@ if (v.mt) {
   drawCharge("MT", v.mt);
 }
 
-
-
 if (Array.isArray(v.charges)) {
   v.charges.forEach((c) => {
     drawCharge(c.label, c.amount);
@@ -550,9 +549,10 @@ if (Array.isArray(v.charges)) {
 }
 
 
-
-drawCharge("RATE", v.rate); // rate should always print
-
+// ADVANCE LAST
+if (v.advance) {
+  drawCharge("ADVANCE", v.advance);
+}
 
 
 doc.moveTo(chargeLabelX, chargeY + 5)
