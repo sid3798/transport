@@ -254,7 +254,7 @@ function Transport() {
         saveFieldValue("noteList", v.note);
       });
 
-      const response = await fetch("https://transport-print.onrender.com/generate-pdf", {
+          const response = await fetch("https://transport-print.onrender.com/generate-pdf", {
         //const response = await fetch("http://localhost:5000/generate-pdf", {
         method: "POST",
         headers: {
@@ -517,7 +517,7 @@ function Transport() {
       className="slider-btn"
       onClick={() => setOwner("SW")}
     >
-      Siddheshwar
+      Laxman
     </button>
 
     <button
@@ -525,7 +525,7 @@ function Transport() {
       className="slider-btn"
       onClick={() => setOwner("SG")}
     >
-      SG
+      Saurabh
     </button>
 
   </div>
