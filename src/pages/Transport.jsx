@@ -254,8 +254,8 @@ function Transport() {
         saveFieldValue("noteList", v.note);
       });
 
-      const response = await fetch("https://transport-print.onrender.com/generate-pdf", {  
-      //const response = await fetch("http://localhost:5000/generate-pdf", {
+      const response = await fetch("https://transport-print.onrender.com/generate-pdf", {
+        //const response = await fetch("http://localhost:5000/generate-pdf", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -309,22 +309,34 @@ function Transport() {
 
   return (
     <div className="container">
-      <h1>🚛 Transport Billing </h1>
 
-
-
-      <div style={{ textAlign: "right", marginBottom: "5px", display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+      <div className="floating-bar">
 
         <button className="reset-btn" onClick={() => window.location.reload()} title="Reset Form">
           <FiRefreshCw />
         </button>
 
-        <button className="print-btn" onClick={handleDownloadPDF}>
-          📄 Download/Upload Bill
+        <button
+          className="add-btn"
+          onClick={addVehicle}
+        >
+          + Add Vehicle
         </button>
 
+        <button
+          className="download-btn"
+          onClick={handleDownloadPDF}
+        >
+          Save Bill
+        </button>
 
       </div>
+
+
+
+
+
+    
 
 
       {/* PRINT INVOICE LAYOUT */}
@@ -462,9 +474,11 @@ function Transport() {
         <div className="field">
           <label>M/s</label>
           <input
+            autoComplete="on"
             list="msList"
             value={msName}
             onChange={(e) => setMsName(e.target.value.toUpperCase())}
+            onInput={(e) => setMsName(e.target.value.toUpperCase())}
           />
 
           <datalist id="msList">
@@ -477,9 +491,11 @@ function Transport() {
         <div className="field">
           <label>A/c</label>
           <input
+            autoComplete="on"
             list="acList"
             value={account}
             onChange={(e) => setAccount(e.target.value.toUpperCase())}
+            onInput={(e) => setAccount(e.target.value.toUpperCase())}
           />
 
           <datalist id="acList">
@@ -495,11 +511,11 @@ function Transport() {
         </div>
       </div>
 
-      <div style={{ marginTop: "25px" }}>
+      {/* <div style={{ marginTop: "25px" }}>
         <button className="primary-btn" onClick={addVehicle}>
           ➕ Add Vehicle
         </button>
-      </div>
+      </div> */}
 
       {vehicles.map((v, index) => (
         <div key={v.id} className="vehicle-card">
@@ -529,9 +545,11 @@ function Transport() {
                 <div className="field">
                   <label>Truck No</label>
                   <input
+                    autoComplete="on"
                     list="truckList"
                     value={v.truckNo}
                     onChange={(e) => updateVehicle(v.id, "truckNo", e.target.value.toUpperCase())}
+                    onInput={(e) => updateVehicle(v.id, "truckNo", e.target.value.toUpperCase())}
                   />
 
                   <datalist id="truckList">
@@ -550,9 +568,11 @@ function Transport() {
                 <div className="field">
                   <label>From</label>
                   <input
+                    autoComplete="on"
                     list="fromList"
                     value={v.from}
                     onChange={(e) => updateVehicle(v.id, "from", e.target.value.toUpperCase())}
+                    onInput={(e) => updateVehicle(v.id, "from", e.target.value.toUpperCase())}
                   />
 
                   <datalist id="fromList">
@@ -565,9 +585,11 @@ function Transport() {
                 <div className="field">
                   <label>To</label>
                   <input
+                    autoComplete="on"
                     list="toList"
                     value={v.to}
                     onChange={(e) => updateVehicle(v.id, "to", e.target.value.toUpperCase())}
+                    onInput={(e) => updateVehicle(v.id, "to", e.target.value.toUpperCase())}
                   />
 
                   <datalist id="toList">
@@ -580,9 +602,11 @@ function Transport() {
                 <div className="field">
                   <label>MT YARD</label>
                   <input
+                    autoComplete="on"
                     list="yardList"
                     value={v.mtYard}
                     onChange={(e) => updateVehicle(v.id, "mtYard", e.target.value.toUpperCase())}
+                    onInput={(e) => updateVehicle(v.id, "mtYard", e.target.value.toUpperCase())}
                   />
 
                   <datalist id="yardList">
@@ -600,18 +624,22 @@ function Transport() {
 
                 <div className="field">
                   <label>Size</label>
-                  <input value={v.size}
-                    onChange={(e) => updateVehicle(v.id, "size", e.target.value)} />
+                  <input
+                    autoComplete="on"
+                    value={v.size}
+                    onChange={(e) => updateVehicle(v.id, "size", e.target.value)}
+                    onInput={(e) => updateVehicle(v.id, "size", e.target.value)}
+                  />
                 </div>
 
                 <div className="field">
                   <label>Note</label>
                   <input
+                    autoComplete="on"
                     list="noteList"
                     value={v.note}
-                    onChange={(e) =>
-                      updateVehicle(v.id, "note", e.target.value.toUpperCase())
-                    }
+                    onChange={(e) => updateVehicle(v.id, "note", e.target.value.toUpperCase())}
+                    onInput={(e) => updateVehicle(v.id, "note", e.target.value.toUpperCase())}
                   />
 
                   <datalist id="noteList">
@@ -623,26 +651,38 @@ function Transport() {
 
                 <div className="field">
                   <label>Advance</label>
-                  <input type="number" value={v.advance}
-                    onChange={(e) => updateVehicle(v.id, "advance", e.target.value)} />
+                  <input
+                    type="number"
+                    value={v.advance}
+                    onChange={(e) => updateVehicle(v.id, "advance", e.target.value)}
+                  />
                 </div>
 
                 <div className="field">
                   <label>MT</label>
-                  <input type="number" value={v.mt}
-                    onChange={(e) => updateVehicle(v.id, "mt", e.target.value)} />
+                  <input
+                    type="number"
+                    value={v.mt}
+                    onChange={(e) => updateVehicle(v.id, "mt", e.target.value)}
+                  />
                 </div>
 
                 <div className="field">
                   <label>KATA</label>
-                  <input type="number" value={v.kata}
-                    onChange={(e) => updateVehicle(v.id, "kata", e.target.value)} />
+                  <input
+                    type="number"
+                    value={v.kata}
+                    onChange={(e) => updateVehicle(v.id, "kata", e.target.value)}
+                  />
                 </div>
 
                 <div className="field">
                   <label>Rate</label>
-                  <input type="number" value={v.rate}
-                    onChange={(e) => updateVehicle(v.id, "rate", e.target.value)} />
+                  <input
+                    type="number"
+                    value={v.rate}
+                    onChange={(e) => updateVehicle(v.id, "rate", e.target.value)}
+                  />
                 </div>
 
               </div>

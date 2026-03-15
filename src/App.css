@@ -5,9 +5,28 @@ body {
   color: white;
 }
 
-button:hover svg {
-  transform: rotate(180deg);
-  transition: 0.4s;
+.floating-bar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-radius: 8px;
+
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+
+  padding: 10px;
+
+  background: #1d4e55;
+  
+}
+
+.floating-bar button {
+  padding: 10px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 400;
 }
 
 .reset-btn {
@@ -19,10 +38,27 @@ button:hover svg {
   border-radius: 8px;
   cursor: pointer;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: left;
+  justify-content: left;
   transition: all 0.3s ease;
 }
+
+
+.add-btn {
+  background: #007bff;
+  color: white;
+}
+
+.download-btn {
+  background: #28a745;
+  color: white;
+}
+
+button:hover svg {
+  transform: rotate(180deg);
+  transition: 0.4s;
+}
+
 
 .reset-btn:active {
   transform: scale(0.95);
@@ -122,8 +158,8 @@ select:focus {
 
 
 .summary-card {
-  margin-top: 50px;
-  padding: 30px;
+  margin-top: 10px;
+  padding: 2px;
   border-radius: 20px;
   background: linear-gradient(145deg, #00c6ff, #0072ff);
   color: white;
