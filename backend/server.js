@@ -606,10 +606,10 @@ app.get("/next-bill-number", async (req, res) => {
     const owner = req.query.owner;
     const folderId = DRIVE_FOLDERS[owner];
 
-    console.log("OWNER:", owner);
-    console.log("FOLDER ID USED:", folderId);
+    //console.log("OWNER:", owner);
+    //console.log("FOLDER ID USED:", folderId);
 
-    console.log("Testing Drive access...");
+    console.log("Cliked on refresh, fetching bill number...");
 const test = await drive.files.list({ pageSize: 10, fields: "files(name)" });
 //console.log("Drive test files:", test.data.files);
 
@@ -624,7 +624,7 @@ const response = await drive.files.list({
 
 
 //console.log("FILES FROM API:", response.data.files);
-    console.log("FILES FOUND:", response.data.files.length);
+// console.log("FILES FOUND:", response.data.files.length);
 
     let maxBill = 0;
 
@@ -641,7 +641,7 @@ const response = await drive.files.list({
 
     });
 
-    console.log("MAX BILL FOUND:", maxBill);
+    //console.log("MAX BILL FOUND:", maxBill);
 
     res.json({ nextBillNo: maxBill + 1 });
 
