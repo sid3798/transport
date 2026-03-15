@@ -2,18 +2,49 @@ import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { FiRefreshCw } from "react-icons/fi";
 
+
 function Transport() {
   const [owner, setOwner] = useState("SW");
   const [date, setDate] = useState("");
   const [billNo, setBillNo] = useState("");
   const [msName, setMsName] = useState("");
   const [account, setAccount] = useState("");
-  
+
   const [jobNo, setJobNo] = useState("");
 
   const [vehicles, setVehicles] = useState([]);
 
   const chargeOptions = ["TEA", "UNLOADING", "FREIGHT", "LOADING", "PARKING", "OTHER"];
+
+
+
+
+  // -------- AUTOSUGGEST STORAGE --------
+  function saveFieldValue(key, value) {
+    if (!value) return;
+
+    let list = JSON.parse(localStorage.getItem(key)) || [];
+
+    if (!list.includes(value)) {
+      list.push(value);
+
+      // keep last 50 values only
+      if (list.length > 50) {
+        list = list.slice(-50);
+      }
+
+      localStorage.setItem(key, JSON.stringify(list));
+    }
+  }
+
+  function getSuggestions(key) {
+    return JSON.parse(localStorage.getItem(key)) || [];
+  }
+
+  // -------- AUTOSUGGEST STORAGE --------
+
+
+
 
   // ---------- FY + BILL ----------
   const getFY = (selectedDate) => {
@@ -36,27 +67,28 @@ function Transport() {
 
   useEffect(() => {
 
-  async function fetchBillNo() {
+    async function fetchBillNo() {
 
-    try {
+      try {
 
-      const res = await fetch(
-        `https://transport-print.onrender.com/next-bill-number?owner=${owner}`
-      );
+        const res = await fetch(
+          `https://transport-print.onrender.com/next-bill-number?owner=${owner}`
+          //`http://localhost:5000/next-bill-number?owner=${owner}`
+        );
 
-      const data = await res.json();
+        const data = await res.json();
 
-      setBillNo(data.nextBillNo);
+        setBillNo(data.nextBillNo);
 
-    } catch (err) {
-      console.error("Bill number fetch failed", err);
+      } catch (err) {
+        console.error("Bill number fetch failed", err);
+      }
+
     }
 
-  }
+    fetchBillNo();
 
-  fetchBillNo();
-
-}, [owner]);
+  }, [owner]);
 
 
 
@@ -88,9 +120,10 @@ function Transport() {
         containerNo: "",
         from: "",
         to: "",
-        mtYard:"",
+        mtYard: "",
         kgs: "",
         size: "",
+        note: "",
         advance: "",
         mt: "",
         kata: "",
@@ -166,11 +199,11 @@ function Transport() {
       0
     );
     return (
-  Number(v.rate || 0) +
-  Number(v.kata || 0) +
-  Number(v.mt || 0) +
-  chargeTotal
-);
+      Number(v.rate || 0) +
+      Number(v.kata || 0) +
+      Number(v.mt || 0) +
+      chargeTotal
+    );
   };
 
   const grandTotal = vehicles.reduce(
@@ -186,72 +219,87 @@ function Transport() {
   const netBalance = grandTotal - totalAdvance;
 
 
-const handleReset = () => {
+  const handleReset = () => {
 
-  if (!window.confirm("Clear all entered data?")) return;
+    if (!window.confirm("Clear all entered data?")) return;
 
-  setOwner("SW");
-  setDate("");
-  setBillNo("");
-  setMsName("");
-  setAccount("");
-  setJobNo("");
-  setVehicles([]);
+    setOwner("SW");
+    setDate("");
+    setBillNo("");
+    setMsName("");
+    setAccount("");
+    setJobNo("");
+    setVehicles([]);
 
-};
+  };
 
 
 
-const handleDownloadPDF = async () => {
-  const toastId = toast.loading("Bill downloading....");
-  toast.success("Bill downloaded. Uploading to Drive...", { id: toastId });
-  try {
-    const response = await fetch("https://transport-print.onrender.com/generate-pdf", {
-    //const response = await fetch("http://localhost:5000/generate-pdf", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        owner,
-        billNo,
-        date,
-        msName,
-        account,
-        jobNo,
-        vehicles: vehicles.map(v => ({
-          ...v,
-          charges: v.charges.map(c =>({
-            label:
-            c.label ==="OTHER"
-             ? (c.customLabel && c.customLabel.trim() !==
-             ""? c.customLabel: "OTHER")
-             :(c.label || "CHARGE"),
-            amount: Number(c.amount||0)
+  const handleDownloadPDF = async () => {
+    const toastId = toast.loading("Bill downloading....");
+    toast.success("Bill downloaded. Uploading to Drive...", { id: toastId });
+    try {
+
+
+
+      // SAVE AUTOSUGGEST VALUES
+      saveFieldValue("msList", msName);
+      saveFieldValue("acList", account);
+
+      vehicles.forEach(v => {
+        saveFieldValue("truckList", v.truckNo);
+        saveFieldValue("fromList", v.from);
+        saveFieldValue("toList", v.to);
+        saveFieldValue("yardList", v.mtYard);
+        saveFieldValue("noteList", v.note);
+      });
+
+      const response = await fetch("https://transport-print.onrender.com/generate-pdf", {  
+      //const response = await fetch("http://localhost:5000/generate-pdf", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          owner,
+          billNo,
+          date,
+          msName,
+          account,
+          jobNo,
+          vehicles: vehicles.map(v => ({
+            ...v,
+            charges: v.charges.map(c => ({
+              label:
+                c.label === "OTHER"
+                  ? (c.customLabel && c.customLabel.trim() !==
+                    "" ? c.customLabel : "OTHER")
+                  : (c.label || "CHARGE"),
+              amount: Number(c.amount || 0)
+            })),
+            total: getRowTotal(v)
           })),
-          total: getRowTotal(v)
-        })),
-        grandTotal,
-        totalAdvance,
-        netBalance,
-      }),
-    });
+          grandTotal,
+          totalAdvance,
+          netBalance,
+        }),
+      });
 
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${billNo}.pdf`;
-    a.click();
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${billNo}.pdf`;
+      a.click();
 
-    window.URL.revokeObjectURL(url);
+      window.URL.revokeObjectURL(url);
 
-  } catch (error) {
-    console.error("PDF Generation Error:", error);
-    toast.error("Failed to generate or upload bill", { id: toastId });
-  }
-};
+    } catch (error) {
+      console.error("PDF Generation Error:", error);
+      toast.error("Failed to generate or upload bill", { id: toastId });
+    }
+  };
 
 
 
@@ -265,129 +313,129 @@ const handleDownloadPDF = async () => {
 
 
 
-<div style={{ textAlign: "right", marginBottom: "5px", display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+      <div style={{ textAlign: "right", marginBottom: "5px", display: "flex", gap: "10px", justifyContent: "flex-end" }}>
 
-    <button className="reset-btn" onClick={() => window.location.reload()} title="Reset Form">
-    <FiRefreshCw />
-  </button>
+        <button className="reset-btn" onClick={() => window.location.reload()} title="Reset Form">
+          <FiRefreshCw />
+        </button>
 
-  <button className="print-btn" onClick={handleDownloadPDF}>
-    📄 Download/Upload Bill
-  </button>
-
-
-</div>
+        <button className="print-btn" onClick={handleDownloadPDF}>
+          📄 Download/Upload Bill
+        </button>
 
 
-    {/* PRINT INVOICE LAYOUT */}
-<div className="print-invoice">
-  
-  <h2 style={{ textAlign: "center", marginBottom: "10px" }}>
-    {owner === "SG" ? "SG Transport" : "Siddheshwar Transport"}
-  </h2>
-<div className="print-company">
-  <div>Address: Your Company Address Here</div>
-  <div>Contact: 9876543210</div>
-  <div>Email: example@email.com</div>
-</div>
-
-  <div className="print-header">
-    <div><strong>Bill No:</strong> {billNo}</div>
-    <div><strong>Date:</strong> {date}</div>
-    <div><strong>M/s:</strong> {msName}</div>
-    <div><strong>A/c:</strong> {account}</div>
-    
-    <div><strong>JOB NO:</strong> {jobNo}</div>
-  </div>
-
-
-
-
-
-<div className="print-vehicles">
-{vehicles.map((v, index) => (
-  <div key={index} className="vehicle-block">
-
-    {/* LEFT */}
-    <div className="vehicle-left">
-      <div><strong>Date:</strong> {v.rowDate}</div>
-      <div><strong>Truck No:</strong> {v.truckNo}</div>
-    </div>
-
-    {/* MIDDLE */}
-    <div className="vehicle-middle">
-      <div><strong>Container No:</strong> {v.containerNo}</div>
-      <div><strong>Route:</strong> {v.from} → {v.to}</div>
-      <div><strong>MT YARD:</strong> {v.mtYard}</div>
-      <div><strong>Weight:</strong> {v.kgs}</div>
-      <div><strong>Size:</strong> {v.size}</div>
-    </div>
-
-    {/* RIGHT */}
-    <div className="vehicle-right">
-
-      <div className="finance-row bold">
-        <span>Advance:</span>
-        <span>₹{v.advance}</span>
       </div>
 
 
+      {/* PRINT INVOICE LAYOUT */}
+      <div className="print-invoice">
 
-    <div className="finance-row charges-label">
-  <span>Charges:</span>
-  <span></span>
-</div>
-
-      {v.charges.map((c, i) => (
-        <div key={i} className="finance-row">
-          <span>{c.label}:</span>
-          <span>₹{c.amount}</span>
+        <h2 style={{ textAlign: "center", marginBottom: "10px" }}>
+          {owner === "SG" ? "SG Transport" : "Siddheshwar Transport"}
+        </h2>
+        <div className="print-company">
+          <div>Address: Your Company Address Here</div>
+          <div>Contact: 9876543210</div>
+          <div>Email: example@email.com</div>
         </div>
-      ))}
 
-     <div className="rate-dotted-line"></div>
+        <div className="print-header">
+          <div><strong>Bill No:</strong> {billNo}</div>
+          <div><strong>Date:</strong> {date}</div>
+          <div><strong>M/s:</strong> {msName}</div>
+          <div><strong>A/c:</strong> {account}</div>
 
-      <div className="finance-row">
-        <span>Rate:</span>
-        <span>₹{v.rate}</span>
+          <div><strong>JOB NO:</strong> {jobNo}</div>
+        </div>
+
+
+
+
+
+        <div className="print-vehicles">
+          {vehicles.map((v, index) => (
+            <div key={index} className="vehicle-block">
+
+              {/* LEFT */}
+              <div className="vehicle-left">
+                <div><strong>Date:</strong> {v.rowDate}</div>
+                <div><strong>Truck No:</strong> {v.truckNo}</div>
+              </div>
+
+              {/* MIDDLE */}
+              <div className="vehicle-middle">
+                <div><strong>Container No:</strong> {v.containerNo}</div>
+                <div><strong>Route:</strong> {v.from} → {v.to}</div>
+                <div><strong>MT YARD:</strong> {v.mtYard}</div>
+                <div><strong>Weight:</strong> {v.kgs}</div>
+                <div><strong>Size:</strong> {v.size}</div>
+              </div>
+
+              {/* RIGHT */}
+              <div className="vehicle-right">
+
+                <div className="finance-row bold">
+                  <span>Advance:</span>
+                  <span>₹{v.advance}</span>
+                </div>
+
+
+
+                <div className="finance-row charges-label">
+                  <span>Charges:</span>
+                  <span></span>
+                </div>
+
+                {v.charges.map((c, i) => (
+                  <div key={i} className="finance-row">
+                    <span>{c.label}:</span>
+                    <span>₹{c.amount}</span>
+                  </div>
+                ))}
+
+                <div className="rate-dotted-line"></div>
+
+                <div className="finance-row">
+                  <span>Rate:</span>
+                  <span>₹{v.rate}</span>
+                </div>
+
+                <div className="rate-solid-line"></div>
+
+                <div className="finance-row total-row">
+                  <span>Vehicle Total:</span>
+                  <span>₹{getRowTotal(v)}</span>
+                </div>
+
+              </div>
+
+              <div className="vehicle-separator"></div>
+            </div>
+          ))}
+
+        </div>
+
+
+
+
+        <div className="print-footer-summary">
+          <div className="footer-row">
+            <span>Grand Total:</span>
+            <span>₹{grandTotal}</span>
+          </div>
+          <div className="footer-row">
+            <span>Total Advance:</span>
+            <span>₹{totalAdvance}</span>
+          </div>
+          <div className="footer-row net-balance">
+            <span>Net Balance:</span>
+            <span>₹{netBalance}</span>
+          </div>
+        </div>
+
+
+
       </div>
-
-      <div className="rate-solid-line"></div>
-
-      <div className="finance-row total-row">
-        <span>Vehicle Total:</span>
-        <span>₹{getRowTotal(v)}</span>
-      </div>
-
-    </div>
-
-    <div className="vehicle-separator"></div>
-  </div>
-))}
-
-</div>
-
-
- 
-
-<div className="print-footer-summary">
-  <div className="footer-row">
-    <span>Grand Total:</span>
-    <span>₹{grandTotal}</span>
-  </div>
-  <div className="footer-row">
-    <span>Total Advance:</span>
-    <span>₹{totalAdvance}</span>
-  </div>
-  <div className="footer-row net-balance">
-    <span>Net Balance:</span>
-    <span>₹{netBalance}</span>
-  </div>
-</div>
-
-
-
-</div>
 
 
       {/* HEADER */}
@@ -397,7 +445,7 @@ const handleDownloadPDF = async () => {
           <select value={owner} onChange={(e) => setOwner(e.target.value)}>
             <option value="SW">Siddheshwar Transport</option>
             <option value="SG">SG</option>
-            
+
           </select>
         </div>
 
@@ -413,14 +461,34 @@ const handleDownloadPDF = async () => {
 
         <div className="field">
           <label>M/s</label>
-          <input value={msName} onChange={(e) => setMsName(e.target.value.toUpperCase())} />
+          <input
+            list="msList"
+            value={msName}
+            onChange={(e) => setMsName(e.target.value.toUpperCase())}
+          />
+
+          <datalist id="msList">
+            {getSuggestions("msList").map((v, i) => (
+              <option key={i} value={v} />
+            ))}
+          </datalist>
         </div>
 
         <div className="field">
           <label>A/c</label>
-          <input value={account} onChange={(e) => setAccount(e.target.value.toUpperCase())} />
+          <input
+            list="acList"
+            value={account}
+            onChange={(e) => setAccount(e.target.value.toUpperCase())}
+          />
+
+          <datalist id="acList">
+            {getSuggestions("acList").map((v, i) => (
+              <option key={i} value={v} />
+            ))}
+          </datalist>
         </div>
-      
+
         <div className="field">
           <label>JOB NO</label>
           <input value={jobNo} onChange={(e) => setJobNo(e.target.value)} />
@@ -460,8 +528,17 @@ const handleDownloadPDF = async () => {
 
                 <div className="field">
                   <label>Truck No</label>
-                  <input value={v.truckNo}
-                    onChange={(e) => updateVehicle(v.id, "truckNo", e.target.value.toUpperCase())} />
+                  <input
+                    list="truckList"
+                    value={v.truckNo}
+                    onChange={(e) => updateVehicle(v.id, "truckNo", e.target.value.toUpperCase())}
+                  />
+
+                  <datalist id="truckList">
+                    {getSuggestions("truckList").map((v, i) => (
+                      <option key={i} value={v} />
+                    ))}
+                  </datalist>
                 </div>
 
                 <div className="field">
@@ -472,20 +549,47 @@ const handleDownloadPDF = async () => {
 
                 <div className="field">
                   <label>From</label>
-                  <input value={v.from}
-                    onChange={(e) => updateVehicle(v.id, "from", e.target.value.toUpperCase())} />
+                  <input
+                    list="fromList"
+                    value={v.from}
+                    onChange={(e) => updateVehicle(v.id, "from", e.target.value.toUpperCase())}
+                  />
+
+                  <datalist id="fromList">
+                    {getSuggestions("fromList").map((v, i) => (
+                      <option key={i} value={v} />
+                    ))}
+                  </datalist>
                 </div>
 
                 <div className="field">
                   <label>To</label>
-                  <input value={v.to}
-                    onChange={(e) => updateVehicle(v.id, "to", e.target.value.toUpperCase())} />
+                  <input
+                    list="toList"
+                    value={v.to}
+                    onChange={(e) => updateVehicle(v.id, "to", e.target.value.toUpperCase())}
+                  />
+
+                  <datalist id="toList">
+                    {getSuggestions("toList").map((v, i) => (
+                      <option key={i} value={v} />
+                    ))}
+                  </datalist>
                 </div>
 
-                 <div className="field">
+                <div className="field">
                   <label>MT YARD</label>
-                  <input value={v.mtYard} 
-                  onChange={(e) => updateVehicle(v.id,"mtYard",e.target.value.toUpperCase())} />
+                  <input
+                    list="yardList"
+                    value={v.mtYard}
+                    onChange={(e) => updateVehicle(v.id, "mtYard", e.target.value.toUpperCase())}
+                  />
+
+                  <datalist id="yardList">
+                    {getSuggestions("yardList").map((v, i) => (
+                      <option key={i} value={v} />
+                    ))}
+                  </datalist>
                 </div>
 
                 <div className="field">
@@ -498,6 +602,23 @@ const handleDownloadPDF = async () => {
                   <label>Size</label>
                   <input value={v.size}
                     onChange={(e) => updateVehicle(v.id, "size", e.target.value)} />
+                </div>
+
+                <div className="field">
+                  <label>Note</label>
+                  <input
+                    list="noteList"
+                    value={v.note}
+                    onChange={(e) =>
+                      updateVehicle(v.id, "note", e.target.value.toUpperCase())
+                    }
+                  />
+
+                  <datalist id="noteList">
+                    {(JSON.parse(localStorage.getItem("noteList")) || []).map((n, i) => (
+                      <option key={i} value={n} />
+                    ))}
+                  </datalist>
                 </div>
 
                 <div className="field">
@@ -527,72 +648,72 @@ const handleDownloadPDF = async () => {
               </div>
 
               {/* CHARGES */}
-             <div className="charges-section">
-  <h4>Charges</h4>
+              <div className="charges-section">
+                <h4>Charges</h4>
 
-  {v.charges.map((charge, i) => (
-    <div key={i} className="charge-row">
+                {v.charges.map((charge, i) => (
+                  <div key={i} className="charge-row">
 
-      {/* Dropdown */}
-      <select
-        value={charge.label}
-        onChange={(e) =>
-          updateCharge(v.id, i, "label", e.target.value)
-        }
-      >
-        <option value="">Select</option>
-        {chargeOptions.map((opt) => (
-          <option key={opt} value={opt}>
-            {opt}
-          </option>
-        ))}
-      </select>
+                    {/* Dropdown */}
+                    <select
+                      value={charge.label}
+                      onChange={(e) =>
+                        updateCharge(v.id, i, "label", e.target.value)
+                      }
+                    >
+                      <option value="">Select</option>
+                      {chargeOptions.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
 
-      {/* Custom Label Input (only when OTHER selected) */}
-      {charge.label === "OTHER" && (
-        <input
-          type="text"
-          placeholder="Enter Charge Name"
-          value={charge.customLabel || ""}
-          onChange={(e) =>
-            updateCharge(
-              v.id,
-              i,
-              "customLabel",
-              e.target.value.toUpperCase()
-            )
-          }
-        />
-      )}
+                    {/* Custom Label Input (only when OTHER selected) */}
+                    {charge.label === "OTHER" && (
+                      <input
+                        type="text"
+                        placeholder="Enter Charge Name"
+                        value={charge.customLabel || ""}
+                        onChange={(e) =>
+                          updateCharge(
+                            v.id,
+                            i,
+                            "customLabel",
+                            e.target.value.toUpperCase()
+                          )
+                        }
+                      />
+                    )}
 
-      {/* Amount Input */}
-      <input
-        type="number"
-        value={charge.amount}
-        onChange={(e) =>
-          updateCharge(v.id, i, "amount", e.target.value)
-        }
-      />
+                    {/* Amount Input */}
+                    <input
+                      type="number"
+                      value={charge.amount}
+                      onChange={(e) =>
+                        updateCharge(v.id, i, "amount", e.target.value)
+                      }
+                    />
 
-      {/* Remove Button */}
-      <button
-        className="remove-charge-btn"
-        onClick={() => removeCharge(v.id, i)}
-      >
-        ✖
-      </button>
-    </div>
-  ))}
+                    {/* Remove Button */}
+                    <button
+                      className="remove-charge-btn"
+                      onClick={() => removeCharge(v.id, i)}
+                    >
+                      ✖
+                    </button>
+                  </div>
+                ))}
 
-  {v.charges.length < 5 && (
-    <button
-      className="add-charge-btn"
-      onClick={() => addCharge(v.id)}
-    >
-      ➕ Add Charge
-    </button>
-  )}
-</div>
+                {v.charges.length < 5 && (
+                  <button
+                    className="add-charge-btn"
+                    onClick={() => addCharge(v.id)}
+                  >
+                    ➕ Add Charge
+                  </button>
+                )}
+              </div>
             </>
           )}
         </div>
@@ -600,7 +721,7 @@ const handleDownloadPDF = async () => {
 
       {vehicles.length > 0 && (
         <div className="summary-card">
-          
+
           <h2>Grand Total: ₹{grandTotal}</h2>
           <h3>Total Advance: ₹{totalAdvance}</h3>
           <h2 style={{ color: netBalance < 0 ? "red" : "white" }}>

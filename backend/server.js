@@ -443,167 +443,141 @@ doc.moveDown();
 
 
 
-  // line separator
-  
+// line separator
 doc.moveTo(20, doc.y).lineTo(doc.page.width - 20, doc.y).stroke();
-  doc.moveDown(0.5);
+doc.moveDown(0.5);
 
-  // VEHICLES
+// VEHICLES
 (data.vehicles || []).forEach((v, i) => {
 
   doc.moveDown(0.5);
 
-
   const y = doc.y;
 
-  //690
-
+  // ================= LEFT COLUMN =================
 let leftY = y;
 
-// LEFT COLUMN
-doc.text(`DATE: ${formatDate(v.rowDate)}`, leftX, leftY);
-leftY += 15;
+function drawLeft(text) {
 
-doc.text(`TRUCK: ${v.truckNo}`, leftX, leftY);
-leftY += 15;
+  const h = doc.heightOfString(text, {
+    width: 200
+  });
+
+  doc.text(text, leftX, leftY, {
+    width: 200
+  });
+
+  leftY += h + 2;
+}
+
+drawLeft(`DATE: ${formatDate(v.rowDate)}`);
+drawLeft(`TRUCK: ${v.truckNo}`);
 
 if (v.containerNo) {
-  doc.text(`CONT NO: ${v.containerNo}`, leftX, leftY);
-  leftY += 15;
+  drawLeft(`CONT NO: ${v.containerNo}`);
 }
 
-  // MIDDLE COLUMN
-let middleY = y;
+const leftEndY = leftY;
 
-if (v.from || v.to) {
-  doc.text(`ROUTE: ${v.from || ""} ---> ${v.to || ""}`, middleX, middleY);
+  // ================= MIDDLE COLUMN =================
+  let middleY = y;
+
+  if (v.from || v.to) {
+    doc.text(`ROUTE: ${v.from || ""} ---> ${v.to || ""}`, middleX, middleY);
+    middleY += 15;
+  }
+
+  if (v.mtYard) {
+    doc.text(`MT YARD: ${v.mtYard}`, middleX, middleY);
+    middleY += 15;
+  }
+
+  if (v.kgs) {
+    doc.text(`WEIGHT: ${v.kgs}`, middleX, middleY);
+    middleY += 15;
+  }
+
+  if (v.size) {
+    doc.text(`SIZE: ${v.size}`, middleX, middleY);
+    middleY += 15;
+  }
+
+  if (v.note) {
+  doc.text(`NOTE: ${v.note}`, middleX, middleY);
   middleY += 15;
 }
 
-if (v.mtYard) {
-  doc.text(`MT YARD: ${v.mtYard}`, middleX, middleY);
-  middleY += 15;
-}
-
-if (v.kgs) {
-  doc.text(`WEIGHT: ${v.kgs}`, middleX, middleY);
-  middleY += 15;
-}
-
-if (v.size) {
-  doc.text(`SIZE: ${v.size}`, middleX, middleY);
-  middleY += 15;
-}
-
-const middleEndY = middleY;
-
-  // RIGHT COLUMN
-  
-  
-  
-  
-let chargeY = y;
-
-const chargeLabelX = rightX -20;   // labels slightly left for better alignment
-const chargeValueX = 525;     // value always near page edge
-
-const labelWidth = 90;       // smaller label column
-const valueWidth = 40;
+  const middleEndY = middleY;
 
 
+  // ================= RIGHT COLUMN =================
+  let chargeY = y;
 
-function drawCharge(label, value) {
+  const chargeLabelX = rightX - 20;
+  const chargeValueX = 525;
 
-  const labelText = `${label}:`;
+  const labelWidth = 90;
+  const valueWidth = 40;
 
-  const labelHeight = doc.heightOfString(labelText, {
-    width: labelWidth
-  });
+  function drawCharge(label, value) {
 
-  // label
-  doc.text(labelText, chargeLabelX, chargeY, {
-    width: labelWidth
-  });
+    const labelText = `${label}:`;
 
-  // value
-  doc.text(
-    Number(value || 0).toLocaleString(),
-    chargeValueX,
-    chargeY,
-    { width: valueWidth, align: "right" }
-  );
+    const labelHeight = doc.heightOfString(labelText, {
+      width: labelWidth
+    });
 
-  chargeY += Math.max(labelHeight, 13);
-}
+    doc.text(labelText, chargeLabelX, chargeY, {
+      width: labelWidth
+    });
 
-// RATE FIRST
-drawCharge("RATE", v.rate);
+    doc.text(
+      Number(value || 0).toLocaleString(),
+      chargeValueX,
+      chargeY,
+      { width: valueWidth, align: "right" }
+    );
 
+    chargeY += Math.max(labelHeight, 13);
+  }
 
-// CHARGES SECTION
-if (v.kata) {
-  drawCharge("KATA", v.kata);
-}
+  // RATE FIRST
+  drawCharge("RATE", v.rate);
 
-if (v.mt) {
-  drawCharge("MT", v.mt);
-}
+  if (v.kata) drawCharge("KATA", v.kata);
+  if (v.mt) drawCharge("MT", v.mt);
 
-if (Array.isArray(v.charges)) {
-  v.charges.forEach((c) => {
-    drawCharge(c.label, c.amount);
-  });
-}
+  if (Array.isArray(v.charges)) {
+    v.charges.forEach((c) => {
+      drawCharge(c.label, c.amount);
+    });
+  }
 
+  if (v.advance) {
+    doc.font("Helvetica-Bold");
+    drawCharge("ADVANCE", v.advance);
+    doc.font("Helvetica");
+  }
 
-// ADVANCE LAST
-if (v.advance) {
-  doc.font("Helvetica-Bold");
-  drawCharge("ADVANCE", v.advance);
-  doc.font("Helvetica");
-}
-
-const rightEndY = chargeY;
-
-// doc.moveTo(chargeLabelX, chargeY + 5)
-//    .lineTo(doc.page.width - 30, chargeY + 5)
-//    .dash(3, { space: 2 })
-//    .stroke()
-//    .undash();
-
-   
-// chargeY += 15;
+  const rightEndY = chargeY;
 
 
+  // ================= VEHICLE HEIGHT =================
 
-// doc.font("Helvetica-Bold");
+  const vehicleBottom = Math.max(leftEndY, middleEndY, rightEndY);
 
-// drawCharge("Total", v.total);
+  doc
+    .strokeColor("#bfbfbf")
+    .dash(2, { space: 2 })
+    .moveTo(20, vehicleBottom + 5)
+    .lineTo(doc.page.width - 20, vehicleBottom + 5)
+    .stroke()
+    .undash()
+    .strokeColor("black");
 
-// doc.font("Helvetica");
-
-
-// separator line between vehicles
-
-
-const vehicleBottom = Math.max(middleEndY, rightEndY);
-
-doc
-  .strokeColor("#bfbfbf")
-  .dash(2, { space: 2 })
-  .moveTo(40, vehicleBottom + 5)
-  .lineTo(doc.page.width - 30, vehicleBottom + 5)
-  .stroke()
-  .undash()
-  .strokeColor("black");
-
-doc.y = vehicleBottom + 15;
-
-
-  doc.y = Math.max(y + 70, chargeY + 10);
+  doc.y = vehicleBottom + 15;
 
 });
-
 
   // FOOTER POSITION CHECK
 
@@ -637,7 +611,7 @@ app.get("/next-bill-number", async (req, res) => {
 
     console.log("Testing Drive access...");
 const test = await drive.files.list({ pageSize: 10, fields: "files(name)" });
-console.log("Drive test files:", test.data.files);
+//console.log("Drive test files:", test.data.files);
 
 const response = await drive.files.list({
   q: `'${folderId}' in parents and trashed=false`,
@@ -649,14 +623,14 @@ const response = await drive.files.list({
 
 
 
-console.log("FILES FROM API:", response.data.files);
+//console.log("FILES FROM API:", response.data.files);
     console.log("FILES FOUND:", response.data.files.length);
 
     let maxBill = 0;
 
     response.data.files.forEach(file => {
 
-      console.log("FILE NAME:", file.name);
+      //console.log("FILE NAME:", file.name);
 
       const match = file.name.match(/^\d+/);
 
