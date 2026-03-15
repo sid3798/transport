@@ -236,8 +236,8 @@ function Transport() {
 
 
   const handleDownloadPDF = async () => {
-    const toastId = toast.loading("Bill downloading....");
-    toast.success("Saved...", { id: toastId });
+    //const toastId = toast.loading("Bill downloading....");
+    //toast.success("Saved...", { id: toastId });
     try {
 
 
@@ -310,25 +310,65 @@ function Transport() {
   return (
     <div className="container">
 
+      <div className="flying-bill">📄</div>
+      
+
       <div className="floating-bar">
 
         <button className="reset-btn" onClick={() => window.location.reload()} title="Reset Form">
           <FiRefreshCw />
         </button>
 
-        <button
-          className="add-btn"
-          onClick={addVehicle}
-        >
-          + Add Vehicle
-        </button>
+
+
 
         <button
-          className="download-btn"
-          onClick={handleDownloadPDF}
-        >
-          Save Bill
-        </button>
+  className="add-btn"
+  onClick={() => {
+    const btn = document.querySelector(".add-btn");
+    btn.classList.add("engine-start");
+
+    setTimeout(() => {
+      btn.classList.remove("engine-start");
+    }, 600);
+
+    addVehicle();
+  }}
+>
+  <span className="key-icon">🔑</span>
+  New Vehicle
+  <span className="smoke"></span>
+</button>
+
+
+
+
+<button
+  className="save-btn"
+  onClick={async () => {
+
+    const bill = document.querySelector(".flying-bill");
+
+    if (bill) {
+      bill.classList.add("fly");
+
+      setTimeout(() => {
+        bill.classList.remove("fly");
+      }, 1000);
+    }
+
+    await handleDownloadPDF();
+  }}
+>
+  🖨 Save
+</button>
+
+
+
+
+
+
+
 
       </div>
 
@@ -452,14 +492,62 @@ function Transport() {
 
       {/* HEADER */}
       <div className="header-grid">
-        <div className="field">
-          <label>Owner</label>
-          <select value={owner} onChange={(e) => setOwner(e.target.value)}>
-            <option value="SW">Siddheshwar Transport</option>
-            <option value="SG">SG</option>
 
-          </select>
-        </div>
+
+
+
+
+<div className="field">
+ 
+
+  <div className="company-slider">
+
+    <div
+      className={`slider-bg ${owner === "SG" ? "right" : "left"}`}
+    ></div>
+
+    <div
+      className={`truck ${owner === "SG" ? "move-right" : "move-left"}`}
+    >
+      🚚
+    </div>
+
+    <button
+      type="button"
+      className="slider-btn"
+      onClick={() => setOwner("SW")}
+    >
+      Siddheshwar
+    </button>
+
+    <button
+      type="button"
+      className="slider-btn"
+      onClick={() => setOwner("SG")}
+    >
+      SG
+    </button>
+
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
 
         <div className="field">
           <label>Date</label>
