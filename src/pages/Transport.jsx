@@ -254,7 +254,7 @@ function Transport() {
         saveFieldValue("noteList", v.note);
       });
 
-          const response = await fetch("https://transport-print.onrender.com/generate-pdf", {
+        const response = await fetch("https://transport-print.onrender.com/generate-pdf", {
         //const response = await fetch("http://localhost:5000/generate-pdf", {
         method: "POST",
         headers: {

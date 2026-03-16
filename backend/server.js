@@ -410,8 +410,8 @@ doc.y = bottomLineY + 10;
 doc.fontSize(9);
 
 const leftX = 40;
-const middleX = doc.page.width / 2 - 60;
-const rightX = doc.page.width - 160;
+const middleX = 170;
+const rightX =450;
 
 const infoY = doc.y;
 
@@ -528,7 +528,8 @@ const leftEndY = leftY;
     });
 
     doc.text(labelText, chargeLabelX, chargeY, {
-      width: labelWidth
+      width: labelWidth,
+      align: "right"
     });
 
     doc.text(
